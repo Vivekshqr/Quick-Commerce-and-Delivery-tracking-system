@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import useSocket from "@/lib/useSocket";
 import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
+import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import OrderForm from "@/components/OrderForm";
 import { Alert, EmptyState, LoadingState, OrderCard } from "@/components/ui";
@@ -25,7 +26,7 @@ export default function CustomerDashboard() {
       try {
         const user = await authApi.me();
         if (user.role !== "customer") {
-          router.push("/delivery");
+          router.push(homeFor(user.role));
           return;
         }
         setUserId(user._id);

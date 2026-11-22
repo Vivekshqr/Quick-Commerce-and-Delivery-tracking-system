@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/format";
+import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import ProductImage from "@/components/ProductImage";
 import QuantityStepper from "@/components/QuantityStepper";
@@ -23,7 +24,7 @@ export default function CartPage() {
       router.push("/");
       return;
     }
-    authApi.me().then((u) => u.role !== "customer" && router.push("/delivery")).catch(() => router.push("/"));
+    authApi.me().then((u) => u.role !== "customer" && router.push(homeFor(u.role))).catch(() => router.push("/"));
   }, [router]);
 
   const checkout = async (e) => {

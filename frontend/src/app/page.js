@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authApi, errorMessage, setToken } from "@/lib/api";
+import { homeFor } from "@/lib/roles";
 import AuthCard from "@/components/AuthCard";
 import { Alert, Spinner } from "@/components/ui";
 
@@ -21,7 +22,7 @@ export default function Login() {
       const { token } = await authApi.login(email, password);
       setToken(token);
       const user = await authApi.me();
-      router.push(user.role === "customer" ? "/customer" : "/delivery");
+      router.push(homeFor(user.role));
     } catch (error) {
       setError(errorMessage(error, "Login failed"));
       setLoading(false);

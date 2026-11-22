@@ -40,6 +40,16 @@ export const addressesApi = {
   remove: (id) => client.delete(`/addresses/${id}`).then((r) => r.data),
 };
 
+export const adminApi = {
+  stats: () => client.get("/admin/stats").then((r) => r.data),
+  orders: (status) => client.get("/admin/orders", { params: { status } }).then((r) => r.data),
+  partners: () => client.get("/admin/partners").then((r) => r.data),
+  assign: (orderId, partnerId) => client.put(`/admin/orders/${orderId}/assign`, { partnerId }).then((r) => r.data),
+  createProduct: (p) => client.post("/admin/products", p).then((r) => r.data),
+  updateProduct: (id, p) => client.put(`/admin/products/${id}`, p).then((r) => r.data),
+  deleteProduct: (id) => client.delete(`/admin/products/${id}`).then((r) => r.data),
+};
+
 export const ordersApi = {
   create: (order) => client.post("/orders", order).then((r) => r.data),
   forCustomer: (customerId) => client.get(`/orders/customer/${customerId}`).then((r) => r.data),

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, getToken, ordersApi } from "@/lib/api";
+import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import { EmptyState, LoadingState, OrderCard } from "@/components/ui";
 
@@ -32,7 +33,7 @@ export default function OrderHistory() {
     fetchHistory();
   }, [router]);
 
-  const dashboard = role === "delivery" ? "/delivery" : "/customer";
+  const dashboard = homeFor(role);
   const shown = filter === "All" ? history : history.filter((o) => o.status === filter);
 
   return (

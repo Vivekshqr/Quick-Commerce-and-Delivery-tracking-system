@@ -3,12 +3,14 @@ const STATUS_STYLES = {
   Accepted: "bg-sky-50 text-sky-800 ring-sky-200",
   "Out for Delivery": "bg-violet-50 text-violet-800 ring-violet-200",
   Delivered: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+  Cancelled: "bg-red-50 text-red-700 ring-red-200",
 };
 const STATUS_DOTS = {
   Pending: "bg-amber-500",
   Accepted: "bg-sky-500",
   "Out for Delivery": "bg-violet-500",
   Delivered: "bg-emerald-500",
+  Cancelled: "bg-red-500",
 };
 
 export default function StatusBadge({ status }) {

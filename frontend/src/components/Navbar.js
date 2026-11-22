@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authApi, clearToken, getToken } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
+import { homeFor } from "@/lib/roles";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -28,12 +29,12 @@ export default function Navbar() {
     router.push("/");
   };
 
-  const dashboard = user?.role === "delivery" ? "/delivery" : "/customer";
+  const dashboard = homeFor(user?.role);
   const links = user
     ? [
         ...(user.role === "customer" ? [{ href: "/shop", label: "Shop" }] : []),
         { href: dashboard, label: user.role === "customer" ? "My orders" : "Dashboard" },
-        { href: "/history", label: "History" },
+        ...(user.role !== "admin" ? [{ href: "/history", label: "History" }] : []),
         ...(user.role === "customer" ? [{ href: "/addresses", label: "Addresses" }] : []),
         ...(user.role === "customer" ? [{ href: "/cart", label: `Cart${cart.count ? ` (${cart.count})` : ""}` }] : []),
       ]
@@ -73,7 +74,7 @@ export default function Navbar() {
               <span className="ml-3 hidden text-sm text-slate-500 md:inline">
                 {user.name}
                 <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize text-slate-600">
-                  {user.role === "delivery" ? "Delivery partner" : "Customer"}
+                  {user.role === "delivery" ? "Delivery partner" : user.role === "admin" ? "Admin" : "Customer"}
                 </span>
               </span>
               <button onClick={logout} className="btn-secondary ml-3">
