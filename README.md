@@ -23,13 +23,21 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   └── db.js         # MongoDB connection
 │       ├── models/
 │       │   ├── User.js
-│       │   └── Order.js
+│       │   ├── Order.js
+│       │   └── Product.js
+│       ├── services/
+│       │   └── stockService.js     # reserve/restore stock
+│       ├── seed/
+│       │   ├── products.js         # sample catalogue
+│       │   └── seed.js             # npm run seed
 │       ├── controllers/
 │       │   ├── authController.js   # register, login, me
-│       │   └── orderController.js  # create, list, history, update status
+│       │   ├── orderController.js  # create, list, history, update status
+│       │   └── productController.js
 │       ├── routes/
 │       │   ├── authRoutes.js       # /api/auth/*
-│       │   └── orderRoutes.js      # /api/orders/*
+│       │   ├── orderRoutes.js      # /api/orders/*
+│       │   └── productRoutes.js    # /api/products/*
 │       ├── middleware/
 │       │   ├── auth.js             # JWT check + role guard
 │       │   └── errorHandler.js     # async wrapper, 404, 500
@@ -43,11 +51,16 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   ├── layout.js, globals.css
 │       │   ├── page.js       # login
 │       │   ├── register/  customer/  delivery/  history/
+│       │   ├── shop/  cart/
 │       ├── components/
 │       │   ├── Navbar.js  AuthCard.js  PageHeader.js
 │       │   ├── OrderForm.js  DeliveryActions.js
+│       │   ├── ProductCard.js  ProductImage.js  QuantityStepper.js
 │       │   └── ui/           # StatusBadge, OrderCard, Alert, Spinner, LoadingState, EmptyState
+│       ├── context/
+│       │   └── CartContext.js  # cart state (localStorage)
 │       └── lib/
+│           ├── format.js     # price formatting
 │           ├── api.js        # axios client for the backend (NEXT_PUBLIC_API_URL)
 │           └── useSocket.js  # Socket.IO client hook
 └── legacy-nextjs/            # old single-app version (Next API routes), kept for reference
@@ -95,15 +108,27 @@ Open http://localhost:3000.
 
 Production: `npm run build` then `npm start`.
 
+## Features
+
+### 1. Product catalogue & cart
+- 20 sample grocery products: run `npm run seed --prefix backend` once. It only adds products that are missing; add `-- --reset` to replace them all.
+- **Shop** (`/shop`): search by name, filter by category, add to cart, change quantity.
+- **Cart** (`/cart`): saved in the browser (localStorage). Checkout creates one order with several items and a total.
+- Stock goes down when an order is placed. If an item runs out, checkout is refused with "Only N left of …".
+- The custom one-line order form is still on the customer dashboard.
+
 ## API (backend, all JSON)
 
 | Method | Path                            | Auth          | Description                                     |
 |--------|---------------------------------|---------------|-------------------------------------------------|
 | GET    | `/api/health`                   | none          | Health check                                    |
+| GET    | `/api/products?q=&category=`    | none          | List or search products                         |
+| GET    | `/api/products/categories`      | none          | Category names                                  |
+| GET    | `/api/products/:id`             | none          | One product                                     |
 | POST   | `/api/auth/register`            | none          | `{name,email,password,role}` → `{token}`        |
 | POST   | `/api/auth/login`               | none          | `{email,password}` → `{token}`                  |
 | GET    | `/api/auth/me`                  | Bearer        | Current user                                    |
-| POST   | `/api/orders`                   | customer      | `{product,quantity,location}` → order           |
+| POST   | `/api/orders`                   | customer      | `{items:[{productId,quantity}],location}` or `{product,quantity,location}` → order |
 | GET    | `/api/orders/customer/:id`      | same user     | Customer's orders                               |
 | GET    | `/api/orders/pending`           | delivery      | Pending orders + partner's undelivered orders   |
 | PUT    | `/api/orders/:id/status`        | delivery      | `{status}`: Accepted / Out for Delivery / Delivered |

@@ -5,12 +5,13 @@ import useSocket from "@/lib/useSocket";
 import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
 import OrderForm from "@/components/OrderForm";
-import { EmptyState, LoadingState, OrderCard } from "@/components/ui";
+import { Alert, EmptyState, LoadingState, OrderCard } from "@/components/ui";
 
 export default function CustomerDashboard() {
   const [orders, setOrders] = useState([]);
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [placed, setPlaced] = useState(false);
   const socket = useSocket();
   const router = useRouter();
 
@@ -33,6 +34,7 @@ export default function CustomerDashboard() {
         router.push("/");
       }
     };
+    setPlaced(new URLSearchParams(window.location.search).has("placed"));
     fetchUserAndOrders();
   }, [router]);
 
@@ -63,9 +65,10 @@ export default function CustomerDashboard() {
       <PageHeader
         title="Customer Dashboard"
         subtitle="Place new orders and track them live."
-        actionHref="/history"
-        actionLabel="View order history"
+        actionHref="/shop"
+        actionLabel="🛒 Browse the shop"
       />
+      {placed && <Alert type="success" onClose={() => setPlaced(false)}>Order placed! You can track it below.</Alert>}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <OrderForm onSubmit={placeOrder} disabled={!userId} />
         <section className="card lg:col-span-3">

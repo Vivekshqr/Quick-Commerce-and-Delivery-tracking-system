@@ -2,20 +2,55 @@ const mongoose = require("mongoose");
 const Order = require("../models/Order");
 require("../models/User"); // registered so populate() works
 const { emitOrderUpdate } = require("../socket");
+const { reserveStock } = require("../services/stockService");
 
 const ALLOWED_UPDATES = ["Accepted", "Out for Delivery", "Delivered"];
 
 // POST /api/orders  (customer)
+// Body is either a cart checkout { items: [{ productId, quantity }], location }
+// or a simple custom order { product, quantity, location }.
 async function createOrder(req, res) {
-  const { product, quantity, location } = req.body || {};
-  if (!product || !location || !(Number(quantity) >= 1)) {
-    return res.status(400).json({ message: "Product, quantity (>= 1) and location are required" });
+  const { items, product, quantity, location } = req.body || {};
+  if (!location || !String(location).trim()) {
+    return res.status(400).json({ message: "Delivery location is required" });
+  }
+
+  let orderData;
+  if (Array.isArray(items) && items.length > 0) {
+    // Merge duplicate lines and validate.
+    const merged = new Map();
+    for (const it of items) {
+      const qty = Number(it?.quantity);
+      if (!mongoose.isValidObjectId(it?.productId) || !Number.isInteger(qty) || qty < 1) {
+        return res.status(400).json({ message: "Each item needs a valid productId and quantity >= 1" });
+      }
+      merged.set(String(it.productId), (merged.get(String(it.productId)) || 0) + qty);
+    }
+    const reserved = await reserveStock([...merged].map(([productId, q]) => ({ productId, quantity: q })));
+    const orderItems = reserved.map(({ product: p, quantity: q }) => ({
+      productId: p._id,
+      name: p.name,
+      imageUrl: p.imageUrl,
+      price: p.price,
+      quantity: q,
+    }));
+    const total = Math.round(orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0) * 100) / 100;
+    orderData = {
+      items: orderItems,
+      total,
+      product: orderItems.map((i) => `${i.name} ×${i.quantity}`).join(", "),
+      quantity: orderItems.reduce((n, i) => n + i.quantity, 0),
+    };
+  } else {
+    if (!product || !(Number(quantity) >= 1)) {
+      return res.status(400).json({ message: "Add items to your cart (or give product and quantity >= 1)" });
+    }
+    orderData = { product, quantity: Number(quantity) };
   }
 
   const order = await Order.create({
+    ...orderData,
     customerId: req.user.userId,
-    product,
-    quantity: Number(quantity),
     location,
     status: "Pending",
   });

@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authApi, clearToken, getToken } from "@/lib/api";
+import { useCart } from "@/context/CartContext";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
+  const cart = useCart();
 
   useEffect(() => {
     setOpen(false);
@@ -21,6 +23,7 @@ export default function Navbar() {
 
   const logout = () => {
     clearToken();
+    cart.clear();
     setUser(null);
     router.push("/");
   };
@@ -28,8 +31,10 @@ export default function Navbar() {
   const dashboard = user?.role === "delivery" ? "/delivery" : "/customer";
   const links = user
     ? [
-        { href: dashboard, label: "Dashboard" },
+        ...(user.role === "customer" ? [{ href: "/shop", label: "Shop" }] : []),
+        { href: dashboard, label: user.role === "customer" ? "My orders" : "Dashboard" },
         { href: "/history", label: "History" },
+        ...(user.role === "customer" ? [{ href: "/cart", label: `Cart${cart.count ? ` (${cart.count})` : ""}` }] : []),
       ]
     : [
         { href: "/", label: "Login" },

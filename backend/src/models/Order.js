@@ -2,14 +2,32 @@ const mongoose = require("mongoose");
 
 const ORDER_STATUSES = ["Pending", "Accepted", "Out for Delivery", "Delivered"];
 
-const OrderSchema = new mongoose.Schema({
-  customerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  deliveryPartnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  product: String,
-  quantity: Number,
-  status: { type: String, enum: ORDER_STATUSES, default: "Pending" },
-  location: String,
-});
+const OrderItemSchema = new mongoose.Schema(
+  {
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+    name: String,
+    imageUrl: String,
+    price: Number,
+    quantity: Number,
+  },
+  { _id: false }
+);
+
+const OrderSchema = new mongoose.Schema(
+  {
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    deliveryPartnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    // Summary fields (kept for simple/custom orders and older orders)
+    product: String,
+    quantity: Number,
+    // Catalogue orders
+    items: { type: [OrderItemSchema], default: undefined },
+    total: Number,
+    status: { type: String, enum: ORDER_STATUSES, default: "Pending" },
+    location: String,
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.models.Order || mongoose.model("Order", OrderSchema);
 module.exports.ORDER_STATUSES = ORDER_STATUSES;

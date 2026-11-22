@@ -31,13 +31,13 @@ export default function OrderForm({ onSubmit, disabled }) {
 
   return (
     <section className="card lg:col-span-2">
-      <h2 className="text-lg font-semibold text-slate-900">Place an order</h2>
-      <p className="mb-4 text-sm text-slate-500">Fill in the details below.</p>
+      <h2 className="text-lg font-semibold text-slate-900">Quick custom order</h2>
+      <p className="mb-4 text-sm text-slate-500">Need something not in the shop? Describe it here.</p>
       <Alert onClose={() => setError("")}>{error}</Alert>
       <Alert type="success" onClose={() => setSuccess("")}>{success}</Alert>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="product" className="label">Product ID</label>
+          <label htmlFor="product" className="label">Item</label>
           <input id="product" type="text" value={product} onChange={(e) => setProduct(e.target.value)}
             className="input" placeholder="e.g. MILK-1L" required />
         </div>

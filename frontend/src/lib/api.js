@@ -27,6 +27,12 @@ export const authApi = {
   me: () => client.get("/auth/me").then((r) => r.data),
 };
 
+export const productsApi = {
+  list: (params = {}) => client.get("/products", { params }).then((r) => r.data),
+  categories: () => client.get("/products/categories").then((r) => r.data),
+  get: (id) => client.get(`/products/${id}`).then((r) => r.data),
+};
+
 export const ordersApi = {
   create: (order) => client.post("/orders", order).then((r) => r.data),
   forCustomer: (customerId) => client.get(`/orders/customer/${customerId}`).then((r) => r.data),

@@ -4,10 +4,13 @@
   "private": true,
   "description": "Express + Socket.IO API for the Quick Commerce delivery tracking system",
   "main": "src/server.js",
-  "engines": { "node": ">=20 <25" },
+  "engines": {
+    "node": ">=20 <25"
+  },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
