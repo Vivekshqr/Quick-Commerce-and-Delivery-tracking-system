@@ -25,6 +25,11 @@ const OrderSchema = new mongoose.Schema(
     total: Number,
     status: { type: String, enum: ORDER_STATUSES, default: "Pending" },
     location: String,
+    // Map position of the delivery address (when picked on the map)
+    locationCoords: {
+      lat: Number,
+      lng: Number,
+    },
   },
   { timestamps: true }
 );

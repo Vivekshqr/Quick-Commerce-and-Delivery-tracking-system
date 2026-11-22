@@ -34,6 +34,7 @@ export default function Navbar() {
         ...(user.role === "customer" ? [{ href: "/shop", label: "Shop" }] : []),
         { href: dashboard, label: user.role === "customer" ? "My orders" : "Dashboard" },
         { href: "/history", label: "History" },
+        ...(user.role === "customer" ? [{ href: "/addresses", label: "Addresses" }] : []),
         ...(user.role === "customer" ? [{ href: "/cart", label: `Cart${cart.count ? ` (${cart.count})` : ""}` }] : []),
       ]
     : [

@@ -34,6 +34,12 @@ export default function OrderCard({ order, children }) {
         <div className="min-w-0">
           <dt className="text-slate-500">Delivery location</dt>
           <dd className="break-words font-medium text-slate-800">{order.location}</dd>
+          {order.locationCoords?.lat != null && (
+            <a className="text-xs text-indigo-600 hover:underline" target="_blank" rel="noreferrer"
+              href={`https://www.openstreetmap.org/?mlat=${order.locationCoords.lat}&mlon=${order.locationCoords.lng}#map=17/${order.locationCoords.lat}/${order.locationCoords.lng}`}>
+              📍 Open in map
+            </a>
+          )}
         </div>
       </dl>
       {children}

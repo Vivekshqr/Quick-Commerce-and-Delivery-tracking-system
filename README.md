@@ -33,11 +33,13 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       ├── controllers/
 │       │   ├── authController.js   # register, login, me
 │       │   ├── orderController.js  # create, list, history, update status
-│       │   └── productController.js
+│       │   ├── productController.js
+│       │   └── addressController.js
 │       ├── routes/
 │       │   ├── authRoutes.js       # /api/auth/*
 │       │   ├── orderRoutes.js      # /api/orders/*
-│       │   └── productRoutes.js    # /api/products/*
+│       │   ├── productRoutes.js    # /api/products/*
+│       │   └── addressRoutes.js    # /api/addresses/*
 │       ├── middleware/
 │       │   ├── auth.js             # JWT check + role guard
 │       │   └── errorHandler.js     # async wrapper, 404, 500
@@ -51,16 +53,19 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   ├── layout.js, globals.css
 │       │   ├── page.js       # login
 │       │   ├── register/  customer/  delivery/  history/
-│       │   ├── shop/  cart/
+│       │   ├── shop/  cart/  addresses/
 │       ├── components/
 │       │   ├── Navbar.js  AuthCard.js  PageHeader.js
 │       │   ├── OrderForm.js  DeliveryActions.js
 │       │   ├── ProductCard.js  ProductImage.js  QuantityStepper.js
+│       │   ├── AddressForm.js  AddressSelector.js
+│       │   ├── map/          # Leaflet maps (LocationPickerMap, icons)
 │       │   └── ui/           # StatusBadge, OrderCard, Alert, Spinner, LoadingState, EmptyState
 │       ├── context/
 │       │   └── CartContext.js  # cart state (localStorage)
 │       └── lib/
 │           ├── format.js     # price formatting
+│           ├── geocode.js    # OpenStreetMap Nominatim search / reverse
 │           ├── api.js        # axios client for the backend (NEXT_PUBLIC_API_URL)
 │           └── useSocket.js  # Socket.IO client hook
 └── legacy-nextjs/            # old single-app version (Next API routes), kept for reference
@@ -117,6 +122,11 @@ Production: `npm run build` then `npm start`.
 - Stock goes down when an order is placed. If an item runs out, checkout is refused with "Only N left of …".
 - The custom one-line order form is still on the customer dashboard.
 
+### 2. Address & location picker
+- **Addresses** (`/addresses`): save up to 10 addresses per user (Home/Work/Other), set a default, remove.
+- Pick the exact point on an **OpenStreetMap** map (Leaflet): click the map, drag the pin, search a place, or press **Use my location**. Clicking the map fills in the address text automatically (free OpenStreetMap Nominatim lookup, no API key).
+- At checkout (`/cart`) pick a saved address or add a new one on the map. The order stores the address text plus `locationCoords {lat,lng}`, and the order card links to the spot on the map.
+
 ## API (backend, all JSON)
 
 | Method | Path                            | Auth          | Description                                     |
@@ -125,10 +135,14 @@ Production: `npm run build` then `npm start`.
 | GET    | `/api/products?q=&category=`    | none          | List or search products                         |
 | GET    | `/api/products/categories`      | none          | Category names                                  |
 | GET    | `/api/products/:id`             | none          | One product                                     |
+| GET    | `/api/addresses`                | Bearer        | Saved addresses                                 |
+| POST   | `/api/addresses`                | Bearer        | `{label,line,lat,lng,isDefault?}`               |
+| PUT    | `/api/addresses/:id`            | Bearer        | Update / make default                           |
+| DELETE | `/api/addresses/:id`            | Bearer        | Remove a saved address                          |
 | POST   | `/api/auth/register`            | none          | `{name,email,password,role}` → `{token}`        |
 | POST   | `/api/auth/login`               | none          | `{email,password}` → `{token}`                  |
 | GET    | `/api/auth/me`                  | Bearer        | Current user                                    |
-| POST   | `/api/orders`                   | customer      | `{items:[{productId,quantity}],location}` or `{product,quantity,location}` → order |
+| POST   | `/api/orders`                   | customer      | `{items:[{productId,quantity}],addressId}` (or `location`+`locationCoords`) or `{product,quantity,location}` → order |
 | GET    | `/api/orders/customer/:id`      | same user     | Customer's orders                               |
 | GET    | `/api/orders/pending`           | delivery      | Pending orders + partner's undelivered orders   |
 | PUT    | `/api/orders/:id/status`        | delivery      | `{status}`: Accepted / Out for Delivery / Delivered |

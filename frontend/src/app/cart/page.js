@@ -8,12 +8,13 @@ import { formatPrice } from "@/lib/format";
 import PageHeader from "@/components/PageHeader";
 import ProductImage from "@/components/ProductImage";
 import QuantityStepper from "@/components/QuantityStepper";
+import AddressSelector from "@/components/AddressSelector";
 import { Alert, EmptyState, Spinner } from "@/components/ui";
 
 export default function CartPage() {
   const cart = useCart();
   const router = useRouter();
-  const [location, setLocation] = useState("");
+  const [address, setAddress] = useState(null);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,11 +29,15 @@ export default function CartPage() {
   const checkout = async (e) => {
     e.preventDefault();
     setError("");
+    if (!address) {
+      setError("Choose or add a delivery address.");
+      return;
+    }
     setPlacing(true);
     try {
       await ordersApi.create({
         items: cart.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-        location,
+        addressId: address._id,
       });
       cart.clear();
       router.push("/customer?placed=1");
@@ -85,11 +90,10 @@ export default function CartPage() {
             <form onSubmit={checkout} className="mt-4 space-y-4">
               <Alert onClose={() => setError("")}>{error}</Alert>
               <div>
-                <label htmlFor="location" className="label">Delivery location</label>
-                <input id="location" value={location} onChange={(e) => setLocation(e.target.value)}
-                  className="input" placeholder="House no., street, area" required />
+                <span className="label">Deliver to</span>
+                <AddressSelector value={address} onChange={setAddress} />
               </div>
-              <button type="submit" disabled={placing} className="btn-primary w-full">
+              <button type="submit" disabled={placing || !address} className="btn-primary w-full">
                 {placing && <Spinner className="h-4 w-4" />}
                 {placing ? "Placing order…" : `Place order · ${formatPrice(cart.total)}`}
               </button>

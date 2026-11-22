@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Order = require("../models/Order");
-require("../models/User"); // registered so populate() works
+const User = require("../models/User");
 const { emitOrderUpdate } = require("../socket");
 const { reserveStock } = require("../services/stockService");
 
@@ -10,9 +10,23 @@ const ALLOWED_UPDATES = ["Accepted", "Out for Delivery", "Delivered"];
 // Body is either a cart checkout { items: [{ productId, quantity }], location }
 // or a simple custom order { product, quantity, location }.
 async function createOrder(req, res) {
-  const { items, product, quantity, location } = req.body || {};
+  const { items, product, quantity, addressId } = req.body || {};
+  let { location, locationCoords } = req.body || {};
+
+  // A saved address (picked on the map) fills in the text and the coordinates.
+  if (addressId) {
+    const user = await User.findById(req.user.userId);
+    const address = mongoose.isValidObjectId(addressId) && user?.addresses.id(addressId);
+    if (!address) return res.status(400).json({ message: "Saved address not found" });
+    location = `${address.label}: ${address.line}`;
+    locationCoords = { lat: address.lat, lng: address.lng };
+  }
   if (!location || !String(location).trim()) {
     return res.status(400).json({ message: "Delivery location is required" });
+  }
+  if (locationCoords) {
+    const lat = Number(locationCoords.lat), lng = Number(locationCoords.lng);
+    locationCoords = lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 ? { lat, lng } : undefined;
   }
 
   let orderData;
@@ -52,6 +66,7 @@ async function createOrder(req, res) {
     ...orderData,
     customerId: req.user.userId,
     location,
+    locationCoords,
     status: "Pending",
   });
   emitOrderUpdate(order);

@@ -33,6 +33,13 @@ export const productsApi = {
   get: (id) => client.get(`/products/${id}`).then((r) => r.data),
 };
 
+export const addressesApi = {
+  list: () => client.get("/addresses").then((r) => r.data),
+  add: (address) => client.post("/addresses", address).then((r) => r.data),
+  update: (id, changes) => client.put(`/addresses/${id}`, changes).then((r) => r.data),
+  remove: (id) => client.delete(`/addresses/${id}`).then((r) => r.data),
+};
+
 export const ordersApi = {
   create: (order) => client.post("/orders", order).then((r) => r.data),
   forCustomer: (customerId) => client.get(`/orders/customer/${customerId}`).then((r) => r.data),

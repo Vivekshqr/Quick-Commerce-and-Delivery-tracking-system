@@ -4,6 +4,7 @@ const { clientUrls } = require("./config/env");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const productRoutes = require("./routes/productRoutes");
+const addressRoutes = require("./routes/addressRoutes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -15,6 +16,7 @@ app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/addresses", addressRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
