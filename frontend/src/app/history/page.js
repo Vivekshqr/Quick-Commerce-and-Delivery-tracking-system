@@ -19,7 +19,7 @@ export default function OrderHistory() {
   useEffect(() => {
     const fetchHistory = async () => {
       if (!hasSession()) {
-        router.push("/");
+        router.push("/login");
         return;
       }
       try {
@@ -28,7 +28,7 @@ export default function OrderHistory() {
         setHistory(await ordersApi.history(user._id));
         setLoading(false);
       } catch {
-        router.push("/");
+        router.push("/login");
       }
     };
     fetchHistory();
@@ -40,6 +40,7 @@ export default function OrderHistory() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="History"
         title="Order History"
         subtitle={role === "delivery" ? "Orders you have handled." : "Every order you have placed."}
         actionHref={dashboard}
@@ -52,7 +53,7 @@ export default function OrderHistory() {
               key={f}
               onClick={() => setFilter(f)}
               className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${
-                filter === f ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                filter === f ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
               {f}

@@ -80,7 +80,7 @@ export default function AddressForm({ onSave, onCancel }) {
           {results.map((r) => (
             <li key={`${r.lat},${r.lng}`}>
               <button type="button" onClick={() => { pick({ lat: r.lat, lng: r.lng }, r.label); setResults([]); }}
-                className="w-full px-3 py-2 text-left hover:bg-indigo-50">{r.label}</button>
+                className="w-full px-3 py-2 text-left hover:bg-brand-50">{r.label}</button>
             </li>
           ))}
         </ul>
@@ -96,7 +96,7 @@ export default function AddressForm({ onSave, onCancel }) {
         <div className="flex gap-2">
           {LABELS.map((l) => (
             <button type="button" key={l} onClick={() => setLabel(l)}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium ${label === l ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>
+              className={`rounded-full px-3 py-1.5 text-sm font-medium ${label === l ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>
               {l}
             </button>
           ))}

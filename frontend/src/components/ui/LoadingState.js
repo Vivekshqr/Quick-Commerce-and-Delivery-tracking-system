@@ -1,10 +1,11 @@
-import Spinner from "./Spinner";
+import { CardSkeleton } from "./Skeleton";
 
-export default function LoadingState({ label = "Loading…" }) {
+// Skeleton cards while loading (label kept for screen readers).
+export default function LoadingState({ label = "Loading…", rows = 2 }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-12 text-slate-500">
-      <Spinner />
-      <span className="text-sm">{label}</span>
+    <div role="status" aria-live="polite" className="space-y-3 py-2">
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: rows }).map((_, i) => <CardSkeleton key={i} />)}
     </div>
   );
 }

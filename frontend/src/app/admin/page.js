@@ -22,13 +22,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!hasSession()) {
-      router.push("/");
+      router.push("/login");
       return;
     }
     authApi
       .me()
       .then((u) => (u.role === "admin" ? setReady(true) : router.push(homeFor(u.role))))
-      .catch(() => router.push("/"));
+      .catch(() => router.push("/login"));
     const t = new URLSearchParams(window.location.search).get("tab");
     if (TABS.some((x) => x.id === t)) setTab(t);
   }, [router]);
@@ -42,11 +42,11 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Admin dashboard" subtitle="Sales, orders, delivery partners and the product catalogue." />
-      <div className="flex gap-1 rounded-xl bg-slate-200/60 p-1 sm:w-fit">
+      <PageHeader eyebrow="Admin" title="Dashboard" subtitle="Sales, orders, delivery partners and the product catalogue." />
+      <div className="flex gap-1 rounded-2xl border border-line bg-surface p-1 shadow-card sm:w-fit">
         {TABS.map((t) => (
           <button key={t.id} onClick={() => choose(t.id)}
-            className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition sm:flex-none ${tab === t.id ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>
+            className={`flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition sm:flex-none ${tab === t.id ? "bg-brand-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>
             {t.label}
           </button>
         ))}

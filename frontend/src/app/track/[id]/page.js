@@ -21,7 +21,7 @@ export default function TrackOrderPage() {
 
   useEffect(() => {
     if (!hasSession()) {
-      router.push("/");
+      router.push("/login");
       return;
     }
     ordersApi
@@ -65,10 +65,10 @@ export default function TrackOrderPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Track your order" subtitle={`Order #${String(info.orderId).slice(-6).toUpperCase()} · ${info.location}`}
+      <PageHeader eyebrow="Live tracking" title="Track your order" subtitle={`Order #${String(info.orderId).slice(-6).toUpperCase()} · ${info.location}`}
         actionHref="/customer" actionLabel="← My orders" />
 
-      <section className="card space-y-5">
+      <section className="card space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <StatusBadge status={info.status} />
@@ -82,19 +82,25 @@ export default function TrackOrderPage() {
           {info.partnerName && <p className="text-sm text-slate-600">Delivery partner: <b className="text-slate-900">{info.partnerName}</b></p>}
         </div>
 
-        <ol className="grid grid-cols-4 gap-2">
+        <ol className="relative grid grid-cols-4">
+          <div className="absolute left-[12.5%] right-[12.5%] top-4 h-1 rounded-full bg-slate-200" />
+          <div className="absolute left-[12.5%] top-4 h-1 rounded-full bg-brand-500 transition-all duration-700"
+            style={{ width: `${Math.max(0, step) * 25}%` }} />
           {STEPS.map((s, i) => (
-            <li key={s} className="text-center">
-              <div className={`mx-auto mb-1 h-2 rounded-full ${i <= step ? "bg-indigo-600" : "bg-slate-200"}`} />
-              <span className={`text-[11px] sm:text-xs ${i <= step ? "font-semibold text-slate-900" : "text-slate-400"}`}>{s}</span>
+            <li key={s} className="relative flex flex-col items-center gap-1.5 text-center">
+              <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ring-4 ring-surface transition ${
+                i < step ? "bg-brand-600 text-white" : i === step ? "bg-brand-600 text-white shadow-lg shadow-brand-600/40 animate-pop" : "bg-slate-200 text-slate-500"}`}>
+                {i < step ? "✓" : ["🧾", "👍", "🛵", "🏠"][i]}
+              </span>
+              <span className={`text-[11px] sm:text-xs ${i <= step ? "font-bold text-slate-900" : "text-slate-500"}`}>{s}</span>
             </li>
           ))}
         </ol>
 
         {info.deliveryOtp && (
-          <div className="flex items-center justify-between gap-3 rounded-lg bg-indigo-50 px-4 py-3">
-            <span className="text-sm text-indigo-800">Delivery OTP: give this code to the partner at your door</span>
-            <span className="font-mono text-2xl font-bold tracking-[0.3em] text-indigo-900">{info.deliveryOtp}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-brand-300 bg-brand-50 px-4 py-3">
+            <span className="text-sm text-brand-800"><b className="block text-brand-900">Delivery OTP</b>Give this code to the partner at your door</span>
+            <span className="rounded-xl bg-surface px-4 py-2 font-mono text-2xl font-black tracking-[0.3em] text-brand-900 shadow-sm">{info.deliveryOtp}</span>
           </div>
         )}
         {info.status === "Cancelled" && <Alert>This order was cancelled.</Alert>}
@@ -106,15 +112,17 @@ export default function TrackOrderPage() {
         {info.status === "Delivered" ? (
           <Alert type="success">Your order has been delivered. Enjoy! You can rate the delivery from “My orders”.</Alert>
         ) : info.status === "Cancelled" ? null : !live ? (
-          <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+          <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
             Live tracking starts when your order is <b>Out for Delivery</b>.
           </p>
         ) : !rider ? (
-          <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Waiting for the delivery partner&apos;s location…</p>
+          <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Waiting for the delivery partner&apos;s location…</p>
         ) : null}
 
         {info.destination || rider ? (
-          <TrackingMap destination={info.destination} rider={rider} trail={trail} />
+          <div className="overflow-hidden rounded-2xl border border-line shadow-card">
+            <TrackingMap destination={info.destination} rider={rider} trail={trail} />
+          </div>
         ) : (
           <p className="text-sm text-slate-500">This order has no map location (it was placed with a typed address).</p>
         )}

@@ -31,7 +31,7 @@ export default function DeliveryTrackPage() {
 
   useEffect(() => {
     if (!hasSession()) {
-      router.push("/");
+      router.push("/login");
       return;
     }
     load().catch((err) => setError(errorMessage(err, "Could not load this order")));
@@ -109,7 +109,7 @@ export default function DeliveryTrackPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Delivery route" subtitle={`Order #${String(info.orderId).slice(-6).toUpperCase()} · ${info.location}`}
+      <PageHeader eyebrow="On the road" title="Delivery route" subtitle={`Order #${String(info.orderId).slice(-6).toUpperCase()} · ${info.location}`}
         actionHref="/delivery" actionLabel="← Dashboard" />
       <section className="card space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -119,7 +119,7 @@ export default function DeliveryTrackPage() {
         <Alert onClose={() => setError("")}>{error}</Alert>
 
         {!live ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
             <span>Location sharing is available while the order is <b>Out for Delivery</b>.</span>
             {info.status === "Accepted" && <button onClick={() => markStatus("Out for Delivery")} className="btn-primary">Start delivery</button>}
           </div>
@@ -145,7 +145,9 @@ export default function DeliveryTrackPage() {
         )}
         {live && <TrackingStats rider={me} destination={info.destination} updatedAt={me?.updatedAt} />}
         {info.status === "Delivered" && <Alert type="success">Delivered. Great job!</Alert>}
-        <TrackingMap destination={info.destination} rider={me} trail={trail} />
+        <div className="overflow-hidden rounded-2xl border border-line shadow-card">
+          <TrackingMap destination={info.destination} rider={me} trail={trail} />
+        </div>
       </section>
       {askOtp && <OtpPrompt onClose={() => setAskOtp(false)} onSubmit={(otp) => markStatus("Delivered", otp)} />}
     </div>

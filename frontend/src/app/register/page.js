@@ -42,7 +42,7 @@ export default function Register() {
       footer={
         <>
           Already have an account?{" "}
-          <Link href="/" className="font-semibold text-indigo-600 hover:text-indigo-700">
+          <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">
             Log in
           </Link>
         </>
@@ -71,16 +71,18 @@ export default function Register() {
             {ROLES.map((r) => (
               <label
                 key={r.value}
-                className={`cursor-pointer rounded-lg border p-3 transition ${
+                className={`relative cursor-pointer rounded-xl border-2 p-3.5 transition ${
                   role === r.value
-                    ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100"
-                    : "border-slate-300 hover:border-slate-400"
+                    ? "border-brand-500 bg-brand-50 shadow-sm"
+                    : "border-line hover:border-brand-300"
                 }`}
               >
                 <input type="radio" name="role" value={r.value} checked={role === r.value}
                   onChange={(e) => setRole(e.target.value)} className="sr-only" />
-                <span className="block text-sm font-semibold text-slate-900">{r.title}</span>
+                <span className="mb-1 block text-2xl">{r.value === "delivery" ? "🛵" : "🛒"}</span>
+                <span className="block text-sm font-bold text-slate-900">{r.title}</span>
                 <span className="block text-xs text-slate-500">{r.desc}</span>
+                {role === r.value && <span className="absolute right-3 top-3 flex h-5 w-5 animate-pop items-center justify-center rounded-full bg-brand-600 text-xs text-white">✓</span>}
               </label>
             ))}
           </div>

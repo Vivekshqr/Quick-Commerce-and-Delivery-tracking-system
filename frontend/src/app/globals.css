@@ -1,39 +1,175 @@
 @import "tailwindcss";
 
-/* Consistent light theme (the old dark-mode variables made text unreadable on white cards). */
+/* ------------------------------------------------------------------
+   QuickCart design system
+   - Brand: fresh "quick-commerce" green + sunny amber accent
+   - Semantic tokens: surface / page background / line
+   - Dark mode: add class "dark" on <html> (toggle in the navbar)
+   ------------------------------------------------------------------ */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --color-brand-50: #effef4;
+  --color-brand-100: #d7fbe4;
+  --color-brand-200: #b0f3c9;
+  --color-brand-300: #77e5a3;
+  --color-brand-400: #36cc76;
+  --color-brand-500: #13ad56;
+  --color-brand-600: #0a8b43;
+  --color-brand-700: #086f37;
+  --color-brand-800: #0b582f;
+  --color-brand-900: #0b4828;
+  --color-brand-950: #012814;
+
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+
+  --color-surface: var(--surface);
+  --color-page: var(--page);
+  --color-line: var(--line);
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px -4px rgb(15 23 42 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(15 23 42 / 0.06), 0 16px 32px -12px rgb(15 23 42 / 0.18);
+
+  --animate-fade-up: fade-up 0.35s ease-out both;
+  --animate-pop: pop 0.25s ease-out both;
+  --animate-slide-in: slide-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-float: float 4s ease-in-out infinite;
+
+  @keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  @keyframes slide-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  @keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+}
+
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --surface: #ffffff;
+  --page: #f6f8f7;
+  --line: #e5e9ec;
   color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+/* Dark theme: re-map the neutral (slate) scale so every existing text/border class stays readable. */
+.dark {
+  color-scheme: dark;
+  --surface: #121a26;
+  --page: #0a1019;
+  --line: #243041;
+
+  --color-slate-50: #0f1722;
+  --color-slate-100: #1a2433;
+  --color-slate-200: #263244;
+  --color-slate-300: #334155;
+  --color-slate-400: #6b7a90;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #aab6c8;
+  --color-slate-700: #c8d2df;
+  --color-slate-800: #e2e8f0;
+  --color-slate-900: #f1f5f9;
+  --color-slate-950: #f8fafc;
+
+  /* Soft tints (badges, alerts) become translucent; their dark text becomes light. */
+  --color-brand-50: rgb(19 173 86 / 0.12);
+  --color-brand-100: rgb(19 173 86 / 0.2);
+  --color-brand-200: rgb(19 173 86 / 0.35);
+  --color-amber-50: rgb(245 158 11 / 0.12);
+  --color-amber-100: rgb(245 158 11 / 0.2);
+  --color-amber-200: rgb(245 158 11 / 0.35);
+  --color-amber-600: #fbbf24;
+  --color-amber-700: #fcd34d;
+  --color-amber-800: #fde68a;
+  --color-amber-900: #fef3c7;
+  --color-red-50: rgb(239 68 68 / 0.12);
+  --color-red-100: rgb(239 68 68 / 0.2);
+  --color-red-200: rgb(239 68 68 / 0.35);
+  --color-red-600: #f87171;
+  --color-red-700: #fca5a5;
+  --color-red-800: #fecaca;
+  --color-emerald-50: rgb(16 185 129 / 0.12);
+  --color-emerald-100: rgb(16 185 129 / 0.2);
+  --color-emerald-200: rgb(16 185 129 / 0.35);
+  --color-emerald-600: #34d399;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-800: #a7f3d0;
+  --color-sky-50: rgb(14 165 233 / 0.12);
+  --color-sky-200: rgb(14 165 233 / 0.35);
+  --color-sky-800: #bae6fd;
+  --color-violet-50: rgb(139 92 246 / 0.14);
+  --color-violet-200: rgb(139 92 246 / 0.38);
+  --color-violet-800: #ddd6fe;
 }
 
+/* Brand text needs to be lighter on dark backgrounds (buttons keep the solid brand colour). */
+.dark .text-brand-600, .dark .text-brand-700, .dark .text-brand-800 { color: var(--color-brand-300); }
+.dark .text-brand-900 { color: #d7fbe4; }
+.dark .hover\:text-brand-700:hover { color: #b0f3c9; }
+
+/* Dark OpenStreetMap tiles */
+.dark .leaflet-tile { filter: brightness(0.75) invert(1) contrast(0.9) hue-rotate(200deg) saturate(0.35); }
+.dark .leaflet-container { background: #0f1722; }
+.dark .leaflet-control-attribution { background: rgb(18 26 38 / 0.8) !important; color: #94a3b8; }
+.dark .leaflet-control-attribution a { color: #77e5a3; }
+.dark .leaflet-bar a { background: #121a26; color: #e2e8f0; border-color: #243041; }
+.leaflet-tooltip { border-radius: 8px; font-weight: 600; }
+
+html { scroll-behavior: smooth; }
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--page);
+  color: var(--color-slate-900);
   font-family: var(--font-sans);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+::selection { background: var(--color-brand-200); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
+/* ---------- Components ---------- */
 @utility card {
-  @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-sm;
+  @apply rounded-2xl border border-line bg-surface p-6 shadow-card;
 }
 @utility label {
-  @apply mb-1.5 block text-sm font-medium text-slate-700;
+  @apply mb-1.5 block text-sm font-semibold text-slate-700;
 }
 @utility input {
-  @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 disabled:bg-slate-100;
+  @apply block w-full rounded-xl border border-slate-300 bg-surface px-3.5 py-2.5 text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100 disabled:bg-slate-100;
 }
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-150 select-none focus:outline-none focus-visible:ring-4 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100;
 }
 @utility btn-primary {
-  @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-200;
+  @apply btn bg-brand-600 text-white shadow-sm shadow-brand-600/20 hover:bg-brand-700 hover:shadow-md focus-visible:ring-brand-200;
 }
 @utility btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:ring-slate-200;
+  @apply btn border border-slate-300 bg-surface text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-slate-200;
 }
+@utility btn-ghost {
+  @apply btn text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-slate-200;
+}
+@utility btn-accent {
+  @apply btn bg-accent-400 text-slate-950 hover:bg-accent-300 focus-visible:ring-amber-200;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition;
+}
+@utility skeleton {
+  @apply rounded-lg bg-slate-200;
+  background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.35) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+@utility lift {
+  @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-lift;
+}
+@utility glass {
+  @apply border-b border-line bg-surface/80 backdrop-blur-xl;
+}
+.dark .skeleton { background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.06) 50%, transparent 100%); }
+@keyframes toast-progress { from { width: 100%; } to { width: 0%; } }

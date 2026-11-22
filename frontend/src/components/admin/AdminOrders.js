@@ -53,7 +53,7 @@ export default function AdminOrders() {
       <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">
         {FILTERS.map((f) => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium ${filter === f ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium ${filter === f ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>
             {f}
           </button>
         ))}
@@ -62,7 +62,7 @@ export default function AdminOrders() {
       {loading ? (
         <LoadingState label="Loading orders…" />
       ) : orders.length === 0 ? (
-        <EmptyState title="No orders" />
+        <EmptyState icon="📦" title="No orders" />
       ) : (
         <div className="-mx-6 overflow-x-auto px-6">
           <table className="w-full min-w-[720px] text-sm">

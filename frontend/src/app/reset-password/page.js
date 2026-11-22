@@ -29,7 +29,7 @@ export default function ResetPasswordPage() {
       await authApi.resetPassword(token, password);
       clearSession();
       setDone(true);
-      setTimeout(() => router.push("/"), 2500);
+      setTimeout(() => router.push("/login"), 2500);
     } catch (err) {
       setError(errorMessage(err, "Could not reset password"));
       setLoading(false);
@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthCard title="Set a new password" subtitle="Choose a new password for your account."
-      footer={<Link href="/" className="font-semibold text-indigo-600 hover:text-indigo-700">Back to login</Link>}>
+      footer={<Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">Back to login</Link>}>
       <Alert onClose={() => setError("")}>{error}</Alert>
       {token === "" ? (
         <Alert>This link is missing its reset token. <Link href="/forgot-password" className="underline">Request a new link</Link>.</Alert>

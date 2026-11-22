@@ -17,10 +17,10 @@ export default function AddressesPage() {
 
   useEffect(() => {
     if (!hasSession()) {
-      router.push("/");
+      router.push("/login");
       return;
     }
-    load().catch(() => router.push("/")).finally(() => setLoading(false));
+    load().catch(() => router.push("/login")).finally(() => setLoading(false));
   }, [router]);
 
   const run = async (fn) => {
@@ -45,7 +45,7 @@ export default function AddressesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Saved addresses" subtitle="Pick delivery points on the map for faster checkout." actionHref="/shop" actionLabel="← Back to shop" />
+      <PageHeader eyebrow="Delivery" title="Saved addresses" subtitle="Pick delivery points on the map for faster checkout." actionHref="/shop" actionLabel="← Back to shop" />
       <Alert onClose={() => setError("")}>{error}</Alert>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="card">
@@ -53,7 +53,7 @@ export default function AddressesPage() {
           {loading ? (
             <LoadingState />
           ) : addresses.length === 0 ? (
-            <EmptyState title="No saved addresses" description="Add one using the map." />
+            <EmptyState icon="📍" title="No saved addresses" description="Add one using the map." />
           ) : (
             <ul className="space-y-3">
               {addresses.map((a) => (
@@ -62,10 +62,10 @@ export default function AddressesPage() {
                     <div className="min-w-0">
                       <p className="font-semibold text-slate-900">
                         {a.label}
-                        {a.isDefault && <span className="ml-2 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-indigo-700">Default</span>}
+                        {a.isDefault && <span className="ml-2 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-brand-700">Default</span>}
                       </p>
                       <p className="text-sm text-slate-600">{a.line}</p>
-                      <a className="text-xs text-indigo-600 hover:underline" target="_blank" rel="noreferrer"
+                      <a className="text-xs text-brand-600 hover:underline" target="_blank" rel="noreferrer"
                         href={`https://www.openstreetmap.org/?mlat=${a.lat}&mlon=${a.lng}#map=17/${a.lat}/${a.lng}`}>
                         View on map ({a.lat.toFixed(4)}, {a.lng.toFixed(4)})
                       </a>
@@ -94,7 +94,7 @@ export default function AddressesPage() {
               <AddressForm onSave={save} onCancel={() => setAdding(false)} />
             </>
           ) : (
-            <EmptyState title="Add a new address" description="Search, use your location, or click on the map.">
+            <EmptyState icon="🗺️" title="Add a new address" description="Search, use your location, or click on the map.">
               <button onClick={() => setAdding(true)} className="btn-primary">+ Add address</button>
             </EmptyState>
           )}

@@ -45,9 +45,9 @@ export default function AddressSelector({ value, onChange }) {
           {addresses.map((a) => (
             <label key={a._id}
               className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
-                value?._id === a._id ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100" : "border-slate-300 hover:border-slate-400"
+                value?._id === a._id ? "border-brand-500 bg-brand-50 ring-2 ring-brand-100" : "border-slate-300 hover:border-slate-400"
               }`}>
-              <input type="radio" name="address" className="mt-1 accent-indigo-600" checked={value?._id === a._id} onChange={() => onChange(a)} />
+              <input type="radio" name="address" className="mt-1 accent-brand-600" checked={value?._id === a._id} onChange={() => onChange(a)} />
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-slate-900">
                   {a.label} {a.isDefault && <span className="ml-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium uppercase text-slate-600">Default</span>}
@@ -64,7 +64,7 @@ export default function AddressSelector({ value, onChange }) {
           <AddressForm onSave={save} onCancel={addresses.length ? () => setAdding(false) : undefined} />
         </div>
       ) : (
-        <button type="button" onClick={() => setAdding(true)} className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+        <button type="button" onClick={() => setAdding(true)} className="text-sm font-semibold text-brand-600 hover:text-brand-700">
           + Add new address
         </button>
       )}

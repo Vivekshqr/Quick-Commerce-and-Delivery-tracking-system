@@ -20,7 +20,7 @@ export default function DeliveryDashboard() {
   useEffect(() => {
     const fetchOrders = async () => {
       if (!hasSession()) {
-        router.push("/");
+        router.push("/login");
         return;
       }
       try {
@@ -29,7 +29,7 @@ export default function DeliveryDashboard() {
         const me = await authApi.me();
         ordersApi.partnerRating(me._id).then(setRating).catch(() => {});
       } catch (error) {
-        router.push(error.response?.status === 403 ? "/customer" : "/");
+        router.push(error.response?.status === 403 ? "/customer" : "/login");
       }
     };
     fetchOrders();
@@ -66,6 +66,7 @@ export default function DeliveryDashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Delivery partner"
         title="Delivery Dashboard"
         subtitle="Accept new orders and update their delivery status."
         actionHref="/history"
@@ -86,7 +87,7 @@ export default function DeliveryDashboard() {
 
       <section className="card">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Active orders</h2>
+          <h2 className="text-lg font-bold text-slate-900">Active orders</h2>
           {!loading && orders.length > 0 && (
             <span className="text-sm text-slate-500">{newCount} new · {orders.length} total</span>
           )}
@@ -95,7 +96,7 @@ export default function DeliveryDashboard() {
         {loading ? (
           <LoadingState label="Loading orders…" />
         ) : orders.length === 0 ? (
-          <EmptyState title="No active orders" description="New orders from customers will show up here automatically." />
+          <EmptyState icon="🛵" title="No active orders" description="New orders from customers will show up here automatically." />
         ) : (
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {orders.map((order) => (

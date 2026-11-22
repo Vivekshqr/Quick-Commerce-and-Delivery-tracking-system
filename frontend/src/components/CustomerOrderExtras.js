@@ -28,9 +28,9 @@ export default function CustomerOrderExtras({ order, onChange }) {
     <div>
       <Alert onClose={() => setError("")}>{error}</Alert>
       {active && order.deliveryOtp && (
-        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-indigo-50 px-3 py-2">
-          <span className="text-xs text-indigo-800">Delivery OTP: share it with the partner at your door</span>
-          <span className="font-mono text-lg font-bold tracking-[0.3em] text-indigo-900">{order.deliveryOtp}</span>
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-brand-50 px-3 py-2">
+          <span className="text-xs text-brand-800">Delivery OTP: share it with the partner at your door</span>
+          <span className="font-mono text-lg font-bold tracking-[0.3em] text-brand-900">{order.deliveryOtp}</span>
         </div>
       )}
       <div className="mt-3 flex flex-wrap gap-2">

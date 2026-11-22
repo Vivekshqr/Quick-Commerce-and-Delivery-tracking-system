@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthCard title="Forgot password" subtitle="We'll create a link to set a new password."
-      footer={<>Remembered it? <Link href="/" className="font-semibold text-indigo-600 hover:text-indigo-700">Back to login</Link></>}>
+      footer={<>Remembered it? <Link href="/login" className="font-semibold text-brand-600 hover:text-brand-700">Back to login</Link></>}>
       <Alert onClose={() => setError("")}>{error}</Alert>
       {done ? (
         <div className="space-y-3">

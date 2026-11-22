@@ -22,8 +22,8 @@ export default function OtpPrompt({ onSubmit, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4" onClick={onClose}>
-      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-xl">
         <h2 className="text-lg font-semibold text-slate-900">Confirm delivery</h2>
         <p className="mt-1 text-sm text-slate-500">Ask the customer for the 4-digit delivery OTP shown in their app.</p>
         <div className="mt-4"><Alert onClose={() => setError("")}>{error}</Alert></div>

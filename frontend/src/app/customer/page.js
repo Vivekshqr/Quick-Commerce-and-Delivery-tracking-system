@@ -20,7 +20,7 @@ export default function CustomerDashboard() {
   useEffect(() => {
     const fetchUserAndOrders = async () => {
       if (!hasSession()) {
-        router.push("/");
+        router.push("/login");
         return;
       }
       try {
@@ -33,7 +33,7 @@ export default function CustomerDashboard() {
         setOrders(await ordersApi.forCustomer(user._id));
         setLoading(false);
       } catch {
-        router.push("/");
+        router.push("/login");
       }
     };
     setPlaced(new URLSearchParams(window.location.search).has("placed"));
@@ -72,6 +72,7 @@ export default function CustomerDashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Customer"
         title="Customer Dashboard"
         subtitle="Place new orders and track them live."
         actionHref="/shop"
@@ -90,7 +91,7 @@ export default function CustomerDashboard() {
           {loading ? (
             <LoadingState label="Loading your orders…" />
           ) : orders.length === 0 ? (
-            <EmptyState title="No orders yet" description="Your orders will appear here once you place one." />
+            <EmptyState icon="📦" title="No orders yet" description="Your orders will appear here once you place one." />
           ) : (
             <ul className="space-y-3">
               {orders.map((order) => (

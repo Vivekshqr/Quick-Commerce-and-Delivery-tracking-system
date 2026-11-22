@@ -21,10 +21,10 @@ export default function CartPage() {
 
   useEffect(() => {
     if (!hasSession()) {
-      router.push("/");
+      router.push("/login");
       return;
     }
-    authApi.me().then((u) => u.role !== "customer" && router.push(homeFor(u.role))).catch(() => router.push("/"));
+    authApi.me().then((u) => u.role !== "customer" && router.push(homeFor(u.role))).catch(() => router.push("/login"));
   }, [router]);
 
   const checkout = async (e) => {
@@ -52,10 +52,10 @@ export default function CartPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Your cart" subtitle="Review items and check out." actionHref="/shop" actionLabel="← Continue shopping" />
+      <PageHeader eyebrow="Checkout" title="Your cart" subtitle="Review items and check out." actionHref="/shop" actionLabel="← Continue shopping" />
       {cart.items.length === 0 ? (
         <div className="card">
-          <EmptyState title="Your cart is empty" description="Add some groceries from the shop.">
+          <EmptyState icon="🛒" title="Your cart is empty" description="Add some groceries from the shop.">
             <Link href="/shop" className="btn-primary">Browse products</Link>
           </EmptyState>
         </div>
@@ -65,7 +65,7 @@ export default function CartPage() {
             <ul className="divide-y divide-slate-100">
               {cart.items.map((i) => (
                 <li key={i.productId} className="flex items-center gap-3 py-3">
-                  <ProductImage src={i.imageUrl} alt={i.name} className="h-16 w-16 shrink-0 rounded-lg" />
+                  <ProductImage src={i.imageUrl} alt={i.name} className="h-16 w-16 shrink-0 rounded-xl border border-line" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-slate-900">{i.name}</p>
                     <p className="text-xs text-slate-500">{i.unit} · {formatPrice(i.price)} each</p>
@@ -81,12 +81,13 @@ export default function CartPage() {
               ))}
             </ul>
           </section>
-          <section className="card h-fit lg:col-span-2">
-            <h2 className="text-lg font-semibold text-slate-900">Order summary</h2>
+          <section className="card h-fit lg:sticky lg:top-24 lg:col-span-2">
+            <h2 className="text-lg font-bold text-slate-900">Order summary</h2>
+            <p className="mt-2 flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-800">⚡ Arrives in about 15 minutes · free delivery</p>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between"><dt className="text-slate-500">Items</dt><dd className="font-medium">{cart.count}</dd></div>
               <div className="flex justify-between"><dt className="text-slate-500">Delivery</dt><dd className="font-medium text-emerald-600">Free</dd></div>
-              <div className="flex justify-between border-t border-slate-100 pt-2 text-base"><dt className="font-semibold">Total</dt><dd className="font-bold">{formatPrice(cart.total)}</dd></div>
+              <div className="flex justify-between border-t border-line pt-3 text-base"><dt className="font-bold text-slate-900">Total</dt><dd className="text-xl font-black text-slate-900">{formatPrice(cart.total)}</dd></div>
             </dl>
             <form onSubmit={checkout} className="mt-4 space-y-4">
               <Alert onClose={() => setError("")}>{error}</Alert>
@@ -94,7 +95,7 @@ export default function CartPage() {
                 <span className="label">Deliver to</span>
                 <AddressSelector value={address} onChange={setAddress} />
               </div>
-              <button type="submit" disabled={placing || !address} className="btn-primary w-full">
+              <button type="submit" disabled={placing || !address} className="btn-primary w-full py-3 text-base">
                 {placing && <Spinner className="h-4 w-4" />}
                 {placing ? "Placing order…" : `Place order · ${formatPrice(cart.total)}`}
               </button>

@@ -6,6 +6,20 @@ import { authApi, clearSession, hasSession } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { homeFor } from "@/lib/roles";
 import NotificationBell from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
+import Logo from "./Logo";
+import { CartIcon, CloseIcon, LogoutIcon, MenuIcon } from "./icons";
+
+const ROLE_LABEL = { delivery: "Delivery partner", admin: "Admin", customer: "Customer" };
+
+function Avatar({ name }) {
+  const initials = (name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return (
+    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 text-xs font-bold text-white ring-2 ring-surface">
+      {initials}
+    </span>
+  );
+}
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -28,7 +42,7 @@ export default function Navbar() {
     clearSession();
     cart.clear();
     setUser(null);
-    router.push("/");
+    router.push("/login");
   };
 
   const dashboard = homeFor(user?.role);
@@ -38,96 +52,94 @@ export default function Navbar() {
         { href: dashboard, label: user.role === "customer" ? "My orders" : "Dashboard" },
         ...(user.role !== "admin" ? [{ href: "/history", label: "History" }] : []),
         ...(user.role === "customer" ? [{ href: "/addresses", label: "Addresses" }] : []),
-        ...(user.role === "customer" ? [{ href: "/cart", label: `Cart${cart.count ? ` (${cart.count})` : ""}` }] : []),
       ]
-    : [
-        { href: "/", label: "Login" },
-        { href: "/register", label: "Register" },
-      ];
+    : [{ href: "/", label: "Home" }];
+
+  const isActive = (href) => pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <nav className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
-        <Link href={user ? dashboard : "/"} className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white">
-            Q
-          </span>
-          <span className="text-lg font-bold tracking-tight text-slate-900">
-            Quick<span className="text-indigo-600">Cart</span>
-          </span>
-        </Link>
+    <header className="glass sticky top-0 z-20">
+      <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+        <Logo href={user ? dashboard : "/"} />
 
-        <div className="hidden items-center gap-1 sm:flex">
+        <div className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-                pathname === l.href
-                  ? "bg-indigo-50 text-indigo-700"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-              }`}
-            >
+            <Link key={l.href} href={l.href}
+              className={`relative rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                isActive(l.href) ? "bg-brand-50 text-brand-700" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}>
               {l.label}
             </Link>
           ))}
-          {user && (
-            <>
-              <span className="ml-3 hidden text-sm text-slate-500 md:inline">
-                {user.name}
-                <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize text-slate-600">
-                  {user.role === "delivery" ? "Delivery partner" : user.role === "admin" ? "Admin" : "Customer"}
-                </span>
-              </span>
-              <span className="ml-2"><NotificationBell /></span>
-              <button onClick={logout} className="btn-secondary ml-2">
-                Logout
-              </button>
-            </>
-          )}
         </div>
 
-        <div className="flex items-center gap-1 sm:hidden">
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
           {user && <NotificationBell />}
-        <button
-          className="rounded-lg p-2 text-slate-700 hover:bg-slate-100"
-          onClick={() => setOpen((o) => !o)}
-          aria-label="Toggle menu"
-        >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            {open ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
+          {user?.role === "customer" && (
+            <Link href="/cart" aria-label={`Cart, ${cart.count} items`}
+              className={`btn-ghost relative h-10 w-10 rounded-xl p-0 ${pathname === "/cart" ? "bg-brand-50 text-brand-700" : ""}`}>
+              <CartIcon />
+              {cart.count > 0 && (
+                <span key={cart.count} className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 animate-pop items-center justify-center rounded-full bg-accent-400 px-1 text-[11px] font-bold text-slate-950 ring-2 ring-surface">
+                  {cart.count > 99 ? "99+" : cart.count}
+                </span>
+              )}
+            </Link>
+          )}
+          {user ? (
+            <div className="ml-1 hidden items-center gap-2 border-l border-line pl-3 md:flex">
+              <Avatar name={user.name} />
+              <div className="hidden leading-tight lg:block">
+                <p className="max-w-32 truncate text-sm font-semibold text-slate-900">{user.name}</p>
+                <p className="text-xs text-slate-500">{ROLE_LABEL[user.role]}</p>
+              </div>
+              <button onClick={logout} className="btn-ghost h-10 w-10 rounded-xl p-0" aria-label="Logout" title="Logout">
+                <LogoutIcon />
+              </button>
+            </div>
+          ) : (
+            <div className="ml-1 hidden items-center gap-2 md:flex">
+              <Link href="/login" className="btn-ghost">Log in</Link>
+              <Link href="/register" className="btn-primary">Sign up</Link>
+            </div>
+          )}
+          <button className="btn-ghost h-10 w-10 rounded-xl p-0 md:hidden" onClick={() => setOpen((o) => !o)} aria-label="Toggle menu" aria-expanded={open}>
+            {open ? <CloseIcon /> : <MenuIcon />}
+          </button>
         </div>
       </nav>
 
       {open && (
-        <div className="border-t border-slate-200 bg-white px-4 py-3 sm:hidden">
+        <div className="animate-fade-up border-t border-line bg-surface px-4 py-3 md:hidden">
           {user && (
-            <p className="mb-2 text-sm text-slate-500">
-              Signed in as <span className="font-medium text-slate-800">{user.name}</span>
-            </p>
+            <div className="mb-3 flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+              <Avatar name={user.name} />
+              <div>
+                <p className="text-sm font-semibold text-slate-900">{user.name}</p>
+                <p className="text-xs text-slate-500">{ROLE_LABEL[user.role]}</p>
+              </div>
+            </div>
           )}
           <div className="flex flex-col gap-1">
             {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                  pathname === l.href ? "bg-indigo-50 text-indigo-700" : "text-slate-700 hover:bg-slate-100"
-                }`}
-              >
+              <Link key={l.href} href={l.href}
+                className={`rounded-xl px-3 py-2.5 text-sm font-semibold ${isActive(l.href) ? "bg-brand-50 text-brand-700" : "text-slate-700 hover:bg-slate-100"}`}>
                 {l.label}
               </Link>
             ))}
-            {user && (
-              <button onClick={logout} className="btn-secondary mt-2 w-full">
-                Logout
-              </button>
+            {user?.role === "customer" && (
+              <Link href="/cart" className="rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                Cart {cart.count > 0 && `(${cart.count})`}
+              </Link>
+            )}
+            {user ? (
+              <button onClick={logout} className="btn-secondary mt-2 w-full"><LogoutIcon className="h-4 w-4" /> Logout</button>
+            ) : (
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Link href="/login" className="btn-secondary">Log in</Link>
+                <Link href="/register" className="btn-primary">Sign up</Link>
+              </div>
             )}
           </div>
         </div>

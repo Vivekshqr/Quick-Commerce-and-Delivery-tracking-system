@@ -27,9 +27,9 @@ export default function ProductFormModal({ product, categories, onSave, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4" onClick={onClose}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()}
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-2xl">
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-surface p-6 shadow-xl sm:rounded-2xl">
         <h2 className="mb-4 text-lg font-semibold text-slate-900">{product ? "Edit product" : "Add product"}</h2>
         <Alert onClose={() => setError("")}>{error}</Alert>
         <div className="grid grid-cols-2 gap-3">
