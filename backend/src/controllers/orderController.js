@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const User = require("../models/User");
-const { emitOrderUpdate } = require("../socket");
+const { emitOrderUpdate, emitToOrder } = require("../socket");
 const { reserveStock } = require("../services/stockService");
 
 const ALLOWED_UPDATES = ["Accepted", "Out for Delivery", "Delivered"];
@@ -130,7 +130,32 @@ async function updateOrderStatus(req, res) {
   order.deliveryPartnerId = req.user.userId;
   await order.save();
   emitOrderUpdate(order);
+  emitToOrder(order._id.toString(), "order:status", { orderId: order._id.toString(), status: order.status });
   res.status(200).json(order);
 }
 
-module.exports = { createOrder, getActiveOrders, getCustomerOrders, getOrderHistory, updateOrderStatus };
+// GET /api/orders/:id/tracking  (the order's customer or delivery partner)
+async function getTracking(req, res) {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) return res.status(404).json({ message: "Order not found" });
+  const order = await Order.findById(id).populate("deliveryPartnerId", "name").populate("customerId", "name");
+  if (!order) return res.status(404).json({ message: "Order not found" });
+  const uid = req.user.userId;
+  const isCustomer = String(order.customerId?._id) === uid;
+  const isPartner = order.deliveryPartnerId && String(order.deliveryPartnerId._id) === uid;
+  if (!isCustomer && !isPartner) return res.status(403).json({ message: "Forbidden" });
+  res.json({
+    orderId: order._id,
+    status: order.status,
+    product: order.product,
+    items: order.items,
+    total: order.total,
+    location: order.location,
+    destination: order.locationCoords?.lat != null ? order.locationCoords : null,
+    partnerLocation: order.partnerLocation?.lat != null ? order.partnerLocation : null,
+    partnerName: order.deliveryPartnerId?.name || null,
+    customerName: order.customerId?.name || null,
+  });
+}
+
+module.exports = { getTracking, createOrder, getActiveOrders, getCustomerOrders, getOrderHistory, updateOrderStatus };

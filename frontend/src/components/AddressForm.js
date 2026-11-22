@@ -1,13 +1,9 @@
 "use client";
 import { useState } from "react";
-import dynamic from "next/dynamic";
 import { reverseGeocode, searchPlaces } from "@/lib/geocode";
 import { Alert, Spinner } from "@/components/ui";
 
-const LocationPickerMap = dynamic(() => import("./map/LocationPickerMap"), {
-  ssr: false,
-  loading: () => <div className="flex h-72 items-center justify-center rounded-lg bg-slate-100 text-sm text-slate-500">Loading map…</div>,
-});
+import { LocationPickerMap } from "./map";
 
 const DEFAULT_CENTER = { lat: 12.9716, lng: 77.5946 }; // Bengaluru
 const LABELS = ["Home", "Work", "Other"];

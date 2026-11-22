@@ -1,20 +1,44 @@
 const { Server } = require("socket.io");
-const { clientUrls } = require("../config/env");
+const jwt = require("jsonwebtoken");
+const { clientUrls, jwtSecret } = require("../config/env");
+const registerTrackingHandlers = require("./trackingHandlers");
 
 let io = null;
 
 function initSocket(httpServer) {
   io = new Server(httpServer, { cors: { origin: clientUrls, credentials: true } });
+
+  // Optional auth: sockets with a valid token can join order rooms and share location.
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (token) {
+      try {
+        socket.data.user = jwt.verify(token, jwtSecret);
+      } catch {
+        /* anonymous socket: only receives public orderUpdate broadcasts */
+      }
+    }
+    next();
+  });
+
   io.on("connection", (socket) => {
     console.log("New client connected");
+    registerTrackingHandlers(io, socket);
     socket.on("disconnect", () => console.log("Client disconnected"));
   });
   return io;
 }
 
-// Broadcast an order change to every connected client.
+const orderRoom = (orderId) => `order:${orderId}`;
+
+// Broadcast an order change to every connected client (and the order's room).
 function emitOrderUpdate(order) {
-  io?.emit("orderUpdate", { orderId: order._id.toString(), status: order.status });
+  const payload = { orderId: order._id.toString(), status: order.status };
+  io?.emit("orderUpdate", payload);
 }
 
-module.exports = { initSocket, emitOrderUpdate };
+function emitToOrder(orderId, event, payload) {
+  io?.to(orderRoom(orderId)).emit(event, payload);
+}
+
+module.exports = { initSocket, emitOrderUpdate, emitToOrder, orderRoom };

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Spinner } from "@/components/ui";
 
 const STEPS = ["Pending", "Accepted", "Out for Delivery", "Delivered"];
@@ -27,6 +28,11 @@ export default function DeliveryActions({ order, updating, onUpdate }) {
           </button>
         );
       })}
+      {order.status !== "Pending" && (
+        <Link href={`/delivery/${order._id}`} className="btn-secondary w-full py-2 text-xs sm:text-sm">
+          🗺️ Open route & share location
+        </Link>
+      )}
     </div>
   );
 }

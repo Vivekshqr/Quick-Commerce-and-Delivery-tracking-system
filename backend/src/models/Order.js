@@ -30,6 +30,12 @@ const OrderSchema = new mongoose.Schema(
       lat: Number,
       lng: Number,
     },
+    // Last position shared by the delivery partner (live tracking)
+    partnerLocation: {
+      lat: Number,
+      lng: Number,
+      updatedAt: Date,
+    },
   },
   { timestamps: true }
 );

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import useSocket from "@/lib/useSocket";
 import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
@@ -85,7 +86,13 @@ export default function CustomerDashboard() {
           ) : (
             <ul className="space-y-3">
               {orders.map((order) => (
-                <OrderCard key={order._id} order={order} />
+                <OrderCard key={order._id} order={order}>
+                  {["Accepted", "Out for Delivery"].includes(order.status) && (
+                    <Link href={`/track/${order._id}`} className="btn-primary mt-3 w-full py-2">
+                      {order.status === "Out for Delivery" ? "📍 Track live" : "View tracking"}
+                    </Link>
+                  )}
+                </OrderCard>
               ))}
             </ul>
           )}

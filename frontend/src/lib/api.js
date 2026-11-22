@@ -45,5 +45,6 @@ export const ordersApi = {
   forCustomer: (customerId) => client.get(`/orders/customer/${customerId}`).then((r) => r.data),
   active: () => client.get("/orders/pending").then((r) => r.data),
   history: (userId) => client.get(`/orders/history/${userId}`).then((r) => r.data),
+  tracking: (orderId) => client.get(`/orders/${orderId}/tracking`).then((r) => r.data),
   updateStatus: (orderId, status) => client.put(`/orders/${orderId}/status`, { status }).then((r) => r.data),
 };
