@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const ORDER_STATUSES = ["Pending", "Accepted", "Out for Delivery", "Delivered"];
+const ORDER_STATUSES = ["Pending", "Accepted", "Out for Delivery", "Delivered", "Cancelled"];
 
 const OrderItemSchema = new mongoose.Schema(
   {
@@ -29,6 +29,16 @@ const OrderSchema = new mongoose.Schema(
     locationCoords: {
       lat: Number,
       lng: Number,
+    },
+    // 4-digit code the customer gives the partner at the door. Hidden from queries unless selected.
+    deliveryOtp: { type: String, select: false },
+    cancelledAt: Date,
+    deliveredAt: Date,
+    // Customer's rating of the delivery partner (after delivery)
+    rating: {
+      stars: { type: Number, min: 1, max: 5 },
+      review: String,
+      createdAt: Date,
     },
     // Last position shared by the delivery partner (live tracking)
     partnerLocation: {

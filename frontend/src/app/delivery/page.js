@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useSocket from "@/lib/useSocket";
-import { errorMessage, getToken, ordersApi } from "@/lib/api";
+import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
+import StarRating from "@/components/StarRating";
 import PageHeader from "@/components/PageHeader";
 import DeliveryActions from "@/components/DeliveryActions";
 import { Alert, EmptyState, LoadingState, OrderCard } from "@/components/ui";
@@ -12,6 +13,7 @@ export default function DeliveryDashboard() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
   const [error, setError] = useState("");
+  const [rating, setRating] = useState(null);
   const router = useRouter();
   const socket = useSocket();
 
@@ -24,6 +26,8 @@ export default function DeliveryDashboard() {
       try {
         setOrders(await ordersApi.active());
         setLoading(false);
+        const me = await authApi.me();
+        ordersApi.partnerRating(me._id).then(setRating).catch(() => {});
       } catch (error) {
         router.push(error.response?.status === 403 ? "/customer" : "/");
       }
@@ -41,15 +45,17 @@ export default function DeliveryDashboard() {
     return () => socket.off("orderUpdate", onOrderUpdate);
   }, [socket]);
 
-  const updateStatus = async (orderId, status) => {
+  // Throws (with a readable message) so the OTP dialog can show the error.
+  const updateStatus = async (orderId, status, otp) => {
     setError("");
     setUpdating(`${orderId}:${status}`);
     try {
-      await ordersApi.updateStatus(orderId, status);
+      await ordersApi.updateStatus(orderId, status, otp);
       setOrders(await ordersApi.active());
     } catch (error) {
-      console.error("Status update failed:", error);
-      setError(errorMessage(error, "Status update failed"));
+      const message = errorMessage(error, "Status update failed");
+      if (status !== "Delivered") setError(message);
+      throw new Error(message);
     } finally {
       setUpdating(null);
     }
@@ -65,6 +71,19 @@ export default function DeliveryDashboard() {
         actionHref="/history"
         actionLabel="View completed orders"
       />
+      {rating && (
+        <section className="card flex flex-wrap items-center gap-4 p-4">
+          <div className="flex items-center gap-2">
+            <StarRating value={rating.average || 0} />
+            <span className="text-lg font-bold text-slate-900">{rating.average ?? "—"}</span>
+            <span className="text-sm text-slate-500">({rating.count} rating{rating.count === 1 ? "" : "s"})</span>
+          </div>
+          {rating.recent[0]?.review && (
+            <p className="min-w-0 flex-1 truncate text-sm text-slate-600">Latest: “{rating.recent[0].review}” — {rating.recent[0].customer}</p>
+          )}
+        </section>
+      )}
+
       <section className="card">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Active orders</h2>

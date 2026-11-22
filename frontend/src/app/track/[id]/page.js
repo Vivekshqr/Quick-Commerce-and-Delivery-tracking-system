@@ -91,13 +91,21 @@ export default function TrackOrderPage() {
           ))}
         </ol>
 
+        {info.deliveryOtp && (
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-indigo-50 px-4 py-3">
+            <span className="text-sm text-indigo-800">Delivery OTP: give this code to the partner at your door</span>
+            <span className="font-mono text-2xl font-bold tracking-[0.3em] text-indigo-900">{info.deliveryOtp}</span>
+          </div>
+        )}
+        {info.status === "Cancelled" && <Alert>This order was cancelled.</Alert>}
+
         {live || rider ? (
           <TrackingStats rider={rider} destination={info.destination} updatedAt={rider?.updatedAt} />
         ) : null}
 
         {info.status === "Delivered" ? (
-          <Alert type="success">Your order has been delivered. Enjoy!</Alert>
-        ) : !live ? (
+          <Alert type="success">Your order has been delivered. Enjoy! You can rate the delivery from “My orders”.</Alert>
+        ) : info.status === "Cancelled" ? null : !live ? (
           <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
             Live tracking starts when your order is <b>Out for Delivery</b>.
           </p>

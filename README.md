@@ -67,6 +67,7 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   ├── OrderForm.js  DeliveryActions.js
 │       │   ├── ProductCard.js  ProductImage.js  QuantityStepper.js
 │       │   ├── AddressForm.js  AddressSelector.js
+│       │   ├── CustomerOrderExtras.js  OtpPrompt.js  RateOrder.js  StarRating.js
 │       │   ├── TrackingStats.js  Toaster.js  NotificationBell.js
 │       │   ├── admin/        # StatsOverview, BarChart, AdminOrders, AdminProducts, ProductFormModal
 │       │   ├── map/          # Leaflet maps (LocationPickerMap, TrackingMap, icons)
@@ -165,6 +166,11 @@ Production: `npm run build` then `npm start`.
 - Email and SMS are not included because they need paid provider keys.
 - How it works: an authenticated socket joins rooms `user:<id>` and `role:<role>`. The backend (`services/notify.js`) emits a `notification` event `{title,message,status,orderId,link}`.
 
+### 6. Order extras
+- **Cancel:** a customer can cancel an order while it is still *Pending* (**Cancel order** on the order card). Stock goes back automatically, and partners and admins get a notification. Once an order is accepted it can't be cancelled.
+- **Delivery OTP:** every new order gets a random 4-digit code. Only the customer sees it, on the order card and the tracking page. The partner must type it in to mark the order *Delivered*; a wrong or missing code is refused. Orders created before this feature have no code and can be delivered without one.
+- **Rating:** after delivery the customer rates the partner (1–5 stars plus an optional review), once per order. The partner gets a notification, and the delivery dashboard shows their average rating and the latest review. Ratings also show in History.
+
 ## API (backend, all JSON)
 
 | Method | Path                            | Auth          | Description                                     |
@@ -189,7 +195,10 @@ Production: `npm run build` then `npm start`.
 | GET    | `/api/admin/partners`           | admin         | Delivery partners                               |
 | POST/PUT/DELETE | `/api/admin/products[/:id]` | admin    | Product CRUD                                    |
 | GET    | `/api/orders/:id/tracking`      | order's customer/partner | Status, destination, last rider location |
-| PUT    | `/api/orders/:id/status`        | delivery      | `{status}`: Accepted / Out for Delivery / Delivered |
+| PUT    | `/api/orders/:id/status`        | delivery      | `{status, otp?}`: Accepted / Out for Delivery / Delivered (needs `otp`) |
+| PUT    | `/api/orders/:id/cancel`        | customer      | Cancel a Pending order and put the stock back   |
+| POST   | `/api/orders/:id/rating`        | customer      | `{stars:1-5, review?}` after delivery, once      |
+| GET    | `/api/orders/partners/:id/rating` | Bearer      | Partner's average rating and recent reviews     |
 | GET    | `/api/orders/history/:userId`   | same user     | All orders for the user                         |
 
 Socket.IO event `orderUpdate` → `{ orderId, status }` is emitted on create and status change.

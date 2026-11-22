@@ -8,6 +8,7 @@ import PageHeader from "@/components/PageHeader";
 import TrackingStats from "@/components/TrackingStats";
 import { TrackingMap } from "@/components/map";
 import { Alert, LoadingState, StatusBadge } from "@/components/ui";
+import OtpPrompt from "@/components/OtpPrompt";
 
 // Delivery partner's view of one order: share live GPS or simulate a route for testing.
 export default function DeliveryTrackPage() {
@@ -19,6 +20,7 @@ export default function DeliveryTrackPage() {
   const [trail, setTrail] = useState([]);
   const [mode, setMode] = useState(null); // "gps" | "sim" | null
   const [error, setError] = useState("");
+  const [askOtp, setAskOtp] = useState(false);
   const watchId = useRef(null);
   const simTimer = useRef(null);
 
@@ -84,14 +86,19 @@ export default function DeliveryTrackPage() {
     }, 1500);
   };
 
-  const markStatus = async (status) => {
+  const markStatus = async (status, otp) => {
     setError("");
     try {
-      await ordersApi.updateStatus(id, status);
-      if (status === "Delivered") stop();
+      await ordersApi.updateStatus(id, status, otp);
+      if (status === "Delivered") {
+        stop();
+        setAskOtp(false);
+      }
       await load();
     } catch (err) {
-      setError(errorMessage(err, "Status update failed"));
+      const message = errorMessage(err, "Status update failed");
+      if (status === "Delivered") throw new Error(message);
+      setError(message);
     }
   };
 
@@ -128,7 +135,7 @@ export default function DeliveryTrackPage() {
             ) : (
               <button onClick={startSim} className="btn-secondary">🧪 Simulate route</button>
             )}
-            <button onClick={() => markStatus("Delivered")} className="btn-secondary ml-auto">✅ Mark delivered</button>
+            <button onClick={() => setAskOtp(true)} className="btn-secondary ml-auto">✅ Mark delivered</button>
           </div>
         )}
         {mode && (
@@ -137,8 +144,10 @@ export default function DeliveryTrackPage() {
           </p>
         )}
         {live && <TrackingStats rider={me} destination={info.destination} updatedAt={me?.updatedAt} />}
+        {info.status === "Delivered" && <Alert type="success">Delivered. Great job!</Alert>}
         <TrackingMap destination={info.destination} rider={me} trail={trail} />
       </section>
+      {askOtp && <OtpPrompt onClose={() => setAskOtp(false)} onSubmit={(otp) => markStatus("Delivered", otp)} />}
     </div>
   );
 }

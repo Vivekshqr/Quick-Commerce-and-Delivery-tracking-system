@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import useSocket from "@/lib/useSocket";
 import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
 import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import OrderForm from "@/components/OrderForm";
+import CustomerOrderExtras from "@/components/CustomerOrderExtras";
 import { Alert, EmptyState, LoadingState, OrderCard } from "@/components/ui";
 
 export default function CustomerDashboard() {
@@ -67,7 +67,7 @@ export default function CustomerDashboard() {
     }
   };
 
-  const active = orders.filter((o) => o.status !== "Delivered").length;
+  const active = orders.filter((o) => !["Delivered", "Cancelled"].includes(o.status)).length;
 
   return (
     <div className="space-y-6">
@@ -95,11 +95,8 @@ export default function CustomerDashboard() {
             <ul className="space-y-3">
               {orders.map((order) => (
                 <OrderCard key={order._id} order={order}>
-                  {["Accepted", "Out for Delivery"].includes(order.status) && (
-                    <Link href={`/track/${order._id}`} className="btn-primary mt-3 w-full py-2">
-                      {order.status === "Out for Delivery" ? "📍 Track live" : "View tracking"}
-                    </Link>
-                  )}
+                  <CustomerOrderExtras order={order}
+                    onChange={(u) => setOrders((prev) => prev.map((o) => (o._id === u._id ? { ...o, ...u, deliveryPartnerId: o.deliveryPartnerId } : o)))} />
                 </OrderCard>
               ))}
             </ul>

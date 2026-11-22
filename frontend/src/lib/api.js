@@ -56,5 +56,8 @@ export const ordersApi = {
   active: () => client.get("/orders/pending").then((r) => r.data),
   history: (userId) => client.get(`/orders/history/${userId}`).then((r) => r.data),
   tracking: (orderId) => client.get(`/orders/${orderId}/tracking`).then((r) => r.data),
-  updateStatus: (orderId, status) => client.put(`/orders/${orderId}/status`, { status }).then((r) => r.data),
+  updateStatus: (orderId, status, otp) => client.put(`/orders/${orderId}/status`, { status, otp }).then((r) => r.data),
+  cancel: (orderId) => client.put(`/orders/${orderId}/cancel`).then((r) => r.data),
+  rate: (orderId, stars, review) => client.post(`/orders/${orderId}/rating`, { stars, review }).then((r) => r.data),
+  partnerRating: (partnerId) => client.get(`/orders/partners/${partnerId}/rating`).then((r) => r.data),
 };

@@ -5,8 +5,9 @@ import { authApi, getToken, ordersApi } from "@/lib/api";
 import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import { EmptyState, LoadingState, OrderCard } from "@/components/ui";
+import StarRating from "@/components/StarRating";
 
-const FILTERS = ["All", "Pending", "Accepted", "Out for Delivery", "Delivered"];
+const FILTERS = ["All", "Pending", "Accepted", "Out for Delivery", "Delivered", "Cancelled"];
 
 export default function OrderHistory() {
   const [history, setHistory] = useState([]);
@@ -72,6 +73,12 @@ export default function OrderHistory() {
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {shown.map((order) => (
               <OrderCard key={order._id} order={order}>
+                {order.rating?.stars && (
+                  <div className="mt-3 flex items-center gap-2 text-sm">
+                    <StarRating value={order.rating.stars} size="text-base" />
+                    {order.rating.review && <span className="truncate text-slate-600">“{order.rating.review}”</span>}
+                  </div>
+                )}
                 {(order.customerId?.name || order.deliveryPartnerId?.name) && (
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-100 pt-3 text-xs text-slate-500">
                     {order.customerId?.name && <span>Customer: <b className="text-slate-700">{order.customerId.name}</b></span>}
