@@ -26,7 +26,8 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   ├── Order.js
 │       │   └── Product.js
 │       ├── services/
-│       │   └── stockService.js     # reserve/restore stock
+│       │   ├── stockService.js     # reserve/restore stock
+│       │   └── notify.js           # socket notifications to user/role rooms
 │       ├── seed/
 │       │   ├── products.js         # sample catalogue
 │       │   ├── seed.js             # npm run seed
@@ -66,12 +67,13 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   ├── OrderForm.js  DeliveryActions.js
 │       │   ├── ProductCard.js  ProductImage.js  QuantityStepper.js
 │       │   ├── AddressForm.js  AddressSelector.js
-│       │   ├── TrackingStats.js
+│       │   ├── TrackingStats.js  Toaster.js  NotificationBell.js
 │       │   ├── admin/        # StatsOverview, BarChart, AdminOrders, AdminProducts, ProductFormModal
 │       │   ├── map/          # Leaflet maps (LocationPickerMap, TrackingMap, icons)
 │       │   └── ui/           # StatusBadge, OrderCard, Alert, Spinner, LoadingState, EmptyState
 │       ├── context/
-│       │   └── CartContext.js  # cart state (localStorage)
+│       │   ├── CartContext.js  # cart state (localStorage)
+│       │   └── NotificationContext.js # toasts, bell history, browser notifications
 │       └── lib/
 │           ├── format.js     # price formatting
 │           ├── geocode.js    # OpenStreetMap Nominatim search / reverse
@@ -152,6 +154,16 @@ Production: `npm run build` then `npm start`.
   - **Overview:** revenue, order/customer/partner/product counts, bar charts of revenue and orders for the last 7 days, orders by status, top products, low-stock warning.
   - **Orders:** every order with a status filter. Assign or reassign a delivery partner from a dropdown; a Pending order becomes Accepted. The list updates live.
   - **Products:** add, edit (price, stock, image URL, category…), delete, filter.
+
+### 5. Notifications
+- **In-app toasts** pop up in the top-right on:
+  - order status changes (customer)
+  - new orders (all delivery partners and admins)
+  - an order assigned to you (partner)
+- The **bell** in the navbar keeps the last 30 notifications (saved in the browser), shows an unread count, and links to the order.
+- **Browser notifications:** click the bell, then **Enable browser notifications**. When the QuickCart tab is in the background, the system Notification API shows the message too; clicking it opens the order.
+- Email and SMS are not included because they need paid provider keys.
+- How it works: an authenticated socket joins rooms `user:<id>` and `role:<role>`. The backend (`services/notify.js`) emits a `notification` event `{title,message,status,orderId,link}`.
 
 ## API (backend, all JSON)
 

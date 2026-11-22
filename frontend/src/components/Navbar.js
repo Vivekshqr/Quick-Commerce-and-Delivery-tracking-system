@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { authApi, clearToken, getToken } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { homeFor } from "@/lib/roles";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -77,15 +78,18 @@ export default function Navbar() {
                   {user.role === "delivery" ? "Delivery partner" : user.role === "admin" ? "Admin" : "Customer"}
                 </span>
               </span>
-              <button onClick={logout} className="btn-secondary ml-3">
+              <span className="ml-2"><NotificationBell /></span>
+              <button onClick={logout} className="btn-secondary ml-2">
                 Logout
               </button>
             </>
           )}
         </div>
 
+        <div className="flex items-center gap-1 sm:hidden">
+          {user && <NotificationBell />}
         <button
-          className="rounded-lg p-2 text-slate-700 hover:bg-slate-100 sm:hidden"
+          className="rounded-lg p-2 text-slate-700 hover:bg-slate-100"
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
         >
@@ -97,6 +101,7 @@ export default function Navbar() {
             )}
           </svg>
         </button>
+        </div>
       </nav>
 
       {open && (

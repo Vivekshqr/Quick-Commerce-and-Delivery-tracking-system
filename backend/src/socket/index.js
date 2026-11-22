@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const { clientUrls, jwtSecret } = require("../config/env");
 const registerTrackingHandlers = require("./trackingHandlers");
+const notify = require("../services/notify");
 
 let io = null;
 
@@ -21,8 +22,15 @@ function initSocket(httpServer) {
     next();
   });
 
+  notify.setIO(io);
+
   io.on("connection", (socket) => {
     console.log("New client connected");
+    const user = socket.data.user;
+    if (user) {
+      socket.join(notify.userRoom(user.userId));
+      socket.join(notify.roleRoom(user.role));
+    }
     registerTrackingHandlers(io, socket);
     socket.on("disconnect", () => console.log("Client disconnected"));
   });

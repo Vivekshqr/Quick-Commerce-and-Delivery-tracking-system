@@ -3,6 +3,7 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const { emitOrderUpdate, emitToOrder } = require("../socket");
 const { reserveStock } = require("../services/stockService");
+const { notifyNewOrder, notifyStatusChange } = require("../services/notify");
 
 const ALLOWED_UPDATES = ["Accepted", "Out for Delivery", "Delivered"];
 
@@ -70,6 +71,7 @@ async function createOrder(req, res) {
     status: "Pending",
   });
   emitOrderUpdate(order);
+  notifyNewOrder(order);
   res.status(201).json(order);
 }
 
@@ -131,6 +133,7 @@ async function updateOrderStatus(req, res) {
   await order.save();
   emitOrderUpdate(order);
   emitToOrder(order._id.toString(), "order:status", { orderId: order._id.toString(), status: order.status });
+  notifyStatusChange(order);
   res.status(200).json(order);
 }
 

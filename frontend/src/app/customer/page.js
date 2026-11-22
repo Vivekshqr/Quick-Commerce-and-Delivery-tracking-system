@@ -44,11 +44,18 @@ export default function CustomerDashboard() {
   useEffect(() => {
     if (!socket) return;
     const onOrderUpdate = ({ orderId, status }) => {
-      setOrders((prev) => prev.map((order) => (order._id === orderId ? { ...order, status } : order)));
+      setOrders((prev) => {
+        if (prev.some((o) => o._id === orderId)) {
+          return prev.map((order) => (order._id === orderId ? { ...order, status } : order));
+        }
+        // An order we don't have yet (e.g. placed from another device): reload if it's ours.
+        if (userId) ordersApi.forCustomer(userId).then(setOrders).catch(() => {});
+        return prev;
+      });
     };
     socket.on("orderUpdate", onOrderUpdate);
     return () => socket.off("orderUpdate", onOrderUpdate);
-  }, [socket]);
+  }, [socket, userId]);
 
   const placeOrder = async (order) => {
     try {

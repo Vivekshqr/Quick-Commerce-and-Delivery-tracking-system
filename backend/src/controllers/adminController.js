@@ -3,6 +3,7 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const { emitOrderUpdate, emitToOrder } = require("../socket");
+const { notifyAssigned, notifyStatusChange } = require("../services/notify");
 
 const PRODUCT_FIELDS = ["name", "description", "imageUrl", "price", "unit", "category", "stock"];
 
@@ -102,9 +103,12 @@ async function assignPartner(req, res) {
   if (["Delivered", "Cancelled"].includes(order.status)) {
     return res.status(400).json({ message: `Order is already ${order.status.toLowerCase()}` });
   }
+  const wasPending = order.status === "Pending";
   order.deliveryPartnerId = partner._id;
-  if (order.status === "Pending") order.status = "Accepted";
+  if (wasPending) order.status = "Accepted";
   await order.save();
+  notifyAssigned(order);
+  if (wasPending) notifyStatusChange(order);
   emitOrderUpdate(order);
   emitToOrder(order._id.toString(), "order:status", { orderId: order._id.toString(), status: order.status });
   await order.populate("customerId deliveryPartnerId", "name email role");
