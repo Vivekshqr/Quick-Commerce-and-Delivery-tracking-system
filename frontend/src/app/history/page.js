@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authApi, getToken, ordersApi } from "@/lib/api";
+import { authApi, hasSession, ordersApi } from "@/lib/api";
 import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import { EmptyState, LoadingState, OrderCard } from "@/components/ui";
@@ -18,7 +18,7 @@ export default function OrderHistory() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!getToken()) {
+      if (!hasSession()) {
         router.push("/");
         return;
       }

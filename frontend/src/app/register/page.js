@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authApi, errorMessage, setToken } from "@/lib/api";
+import { authApi, errorMessage, markSession } from "@/lib/api";
+import { homeFor } from "@/lib/roles";
 import AuthCard from "@/components/AuthCard";
 import { Alert, Spinner } from "@/components/ui";
 
@@ -25,9 +26,9 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const { token } = await authApi.register({ name, email, password, role });
-      setToken(token);
-      router.push(role === "customer" ? "/customer" : "/delivery");
+      const { user } = await authApi.register({ name, email, password, role });
+      markSession();
+      router.push(homeFor(user.role));
     } catch (error) {
       setError(errorMessage(error, "Registration failed"));
       setLoading(false);
@@ -62,7 +63,7 @@ export default function Register() {
         <div>
           <label htmlFor="password" className="label">Password</label>
           <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            className="input" placeholder="Choose a password" autoComplete="new-password" required />
+            className="input" placeholder="At least 6 characters" autoComplete="new-password" minLength={6} required />
         </div>
         <fieldset>
           <legend className="label">I am a…</legend>

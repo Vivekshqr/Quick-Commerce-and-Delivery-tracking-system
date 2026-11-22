@@ -3,19 +3,31 @@ import axios from "axios";
 // Backend base URL (Express + Socket.IO). Set in frontend/.env.local.
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-const TOKEN_KEY = "token";
-export const getToken = () => (typeof window === "undefined" ? null : localStorage.getItem(TOKEN_KEY));
-export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
-export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+// The login token (JWT) lives in an httpOnly cookie set by the backend, so JavaScript never sees it.
+// We only keep a harmless "logged in" hint in localStorage so pages know whether to try loading the user.
+const SESSION_KEY = "qc_session";
+const LEGACY_TOKEN_KEY = "token"; // tokens were stored here before; removed on login/logout
+export const hasSession = () => (typeof window === "undefined" ? false : localStorage.getItem(SESSION_KEY) === "1");
+export const markSession = () => {
+  localStorage.setItem(SESSION_KEY, "1");
+  localStorage.removeItem(LEGACY_TOKEN_KEY);
+};
+export const clearSession = () => {
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(LEGACY_TOKEN_KEY);
+};
 
-const client = axios.create({ baseURL: `${API_URL}/api` });
+// withCredentials: send the auth cookie to the API (CORS with credentials).
+const client = axios.create({ baseURL: `${API_URL}/api`, withCredentials: true });
 
-// Attach the login token to every request.
-client.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+// If the cookie expired, forget the "logged in" hint.
+client.interceptors.response.use(
+  (r) => r,
+  (error) => {
+    if (error?.response?.status === 401 && typeof window !== "undefined") clearSession();
+    return Promise.reject(error);
+  }
+);
 
 // Turn an axios error into a readable message.
 export const errorMessage = (error, fallback = "Something went wrong") =>
@@ -25,6 +37,9 @@ export const authApi = {
   login: (email, password) => client.post("/auth/login", { email, password }).then((r) => r.data),
   register: (payload) => client.post("/auth/register", payload).then((r) => r.data),
   me: () => client.get("/auth/me").then((r) => r.data),
+  logout: () => client.post("/auth/logout").then((r) => r.data),
+  forgotPassword: (email) => client.post("/auth/forgot-password", { email }).then((r) => r.data),
+  resetPassword: (token, password) => client.post("/auth/reset-password", { token, password }).then((r) => r.data),
 };
 
 export const productsApi = {

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useSocket from "@/lib/useSocket";
-import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
+import { authApi, errorMessage, hasSession, ordersApi } from "@/lib/api";
 import StarRating from "@/components/StarRating";
 import PageHeader from "@/components/PageHeader";
 import DeliveryActions from "@/components/DeliveryActions";
@@ -19,7 +19,7 @@ export default function DeliveryDashboard() {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!getToken()) {
+      if (!hasSession()) {
         router.push("/");
         return;
       }
@@ -39,7 +39,7 @@ export default function DeliveryDashboard() {
   useEffect(() => {
     if (!socket) return;
     const onOrderUpdate = () => {
-      if (getToken()) ordersApi.active().then(setOrders).catch(() => {});
+      if (hasSession()) ordersApi.active().then(setOrders).catch(() => {});
     };
     socket.on("orderUpdate", onOrderUpdate);
     return () => socket.off("orderUpdate", onOrderUpdate);

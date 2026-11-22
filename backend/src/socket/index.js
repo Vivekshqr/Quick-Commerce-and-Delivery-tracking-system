@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const { clientUrls, jwtSecret } = require("../config/env");
 const registerTrackingHandlers = require("./trackingHandlers");
+const { readTokenFromCookieHeader } = require("../services/authCookie");
 const notify = require("../services/notify");
 
 let io = null;
@@ -11,7 +12,8 @@ function initSocket(httpServer) {
 
   // Optional auth: sockets with a valid token can join order rooms and share location.
   io.use((socket, next) => {
-    const token = socket.handshake.auth?.token;
+    // Browser: httpOnly cookie sent with the handshake. Other clients may pass auth.token.
+    const token = readTokenFromCookieHeader(socket.handshake.headers.cookie) || socket.handshake.auth?.token;
     if (token) {
       try {
         socket.data.user = jwt.verify(token, jwtSecret);

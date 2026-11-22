@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { addressesApi, errorMessage, getToken } from "@/lib/api";
+import { addressesApi, errorMessage, hasSession } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
 import AddressForm from "@/components/AddressForm";
 import { Alert, EmptyState, LoadingState } from "@/components/ui";
@@ -16,7 +16,7 @@ export default function AddressesPage() {
   const load = () => addressesApi.list().then(setAddresses);
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!hasSession()) {
       router.push("/");
       return;
     }

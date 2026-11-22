@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
+import { authApi, errorMessage, hasSession, ordersApi } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/format";
 import { homeFor } from "@/lib/roles";
@@ -20,7 +20,7 @@ export default function CartPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!hasSession()) {
       router.push("/");
       return;
     }

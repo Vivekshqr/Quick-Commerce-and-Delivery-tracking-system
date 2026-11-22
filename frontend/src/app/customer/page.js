@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useSocket from "@/lib/useSocket";
-import { authApi, errorMessage, getToken, ordersApi } from "@/lib/api";
+import { authApi, errorMessage, hasSession, ordersApi } from "@/lib/api";
 import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import OrderForm from "@/components/OrderForm";
@@ -19,7 +19,7 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     const fetchUserAndOrders = async () => {
-      if (!getToken()) {
+      if (!hasSession()) {
         router.push("/");
         return;
       }

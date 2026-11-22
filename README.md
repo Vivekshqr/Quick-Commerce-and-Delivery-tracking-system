@@ -27,7 +27,8 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   └── Product.js
 │       ├── services/
 │       │   ├── stockService.js     # reserve/restore stock
-│       │   └── notify.js           # socket notifications to user/role rooms
+│       │   ├── notify.js           # socket notifications to user/role rooms
+│       │   └── authCookie.js       # JWT sign + httpOnly cookie helpers
 │       ├── seed/
 │       │   ├── products.js         # sample catalogue
 │       │   ├── seed.js             # npm run seed
@@ -45,8 +46,10 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   ├── addressRoutes.js    # /api/addresses/*
 │       │   └── adminRoutes.js      # /api/admin/* (admin only)
 │       ├── middleware/
-│       │   ├── auth.js             # JWT check + role guard
-│       │   └── errorHandler.js     # async wrapper, 404, 500
+│       │   ├── auth.js             # JWT (cookie) check + role guard
+│       │   ├── errorHandler.js     # async wrapper, 404, 500
+│       │   ├── validators.js       # express-validator rules
+│       │   └── security.js         # rate limits, origin check
 │       └── socket/
 │           ├── index.js            # Socket.IO setup, auth, orderUpdate events
 │           └── trackingHandlers.js # live location rooms
@@ -60,6 +63,7 @@ Quick-Commerce-and-Delivery-tracking-system/
 │       │   ├── register/  customer/  delivery/  history/
 │       │   ├── shop/  cart/  addresses/
 │       │   ├── admin/        # admin dashboard
+│       │   ├── forgot-password/  reset-password/
 │       │   ├── track/[id]/   # customer live tracking
 │       │   ├── delivery/[id]/ # partner route + share location / simulate
 │       ├── components/
@@ -146,7 +150,7 @@ Production: `npm run build` then `npm start`.
 - **Share my live location** sends the browser's GPS position (`navigator.geolocation.watchPosition`) to the backend over Socket.IO. The partner has to allow location access in the browser.
 - **Simulate route** (for testing on a laptop without GPS) drives a fake rider from about 3 km away to the delivery address, sending an update every 1.5 s.
 - The customer taps **Track live** on the order (`/track/<orderId>`) and sees the rider marker move on the map, plus distance, a simple ETA (straight-line distance × 1.3 at 20 km/h) and the time of the last update.
-- Security: sockets send the login token. Only the order's customer or its assigned partner can join the order room. Only the assigned partner can send locations, and only while the order is *Out for Delivery*.
+- Security: sockets are authenticated with the login cookie. Only the order's customer or its assigned partner can join the order room. Only the assigned partner can send locations, and only while the order is *Out for Delivery*.
 - Socket events: `order:watch {orderId}`, `order:unwatch`, `location:update {orderId,lat,lng}` (partner) → `order:location {orderId,lat,lng,updatedAt}`.
 
 ### 4. Admin dashboard
@@ -171,6 +175,25 @@ Production: `npm run build` then `npm start`.
 - **Delivery OTP:** every new order gets a random 4-digit code. Only the customer sees it, on the order card and the tracking page. The partner must type it in to mark the order *Delivered*; a wrong or missing code is refused. Orders created before this feature have no code and can be delivered without one.
 - **Rating:** after delivery the customer rates the partner (1–5 stars plus an optional review), once per order. The partner gets a notification, and the delivery dashboard shows their average rating and the latest review. Ratings also show in History.
 
+### 7. Security & polish
+- **Login cookie:** the JWT is sent as an **httpOnly** cookie `qc_token` (`SameSite=Lax`, `Secure` when `NODE_ENV=production`, lifetime `JWT_EXPIRES_IN`, default 1 day). JavaScript can't read it. The frontend sends it with `withCredentials: true` (axios and Socket.IO), and CORS allows credentials only from `CLIENT_URL`. Login and register now return `{user}` instead of a token. **Logout** (`POST /api/auth/logout`) clears the cookie. API tools can still send `Authorization: Bearer <jwt>`.
+- **CSRF:** `SameSite=Lax`, plus non-GET requests with a foreign `Origin` header are refused (403).
+- **Forgot / reset password:** on the login page click **Forgot password?** and enter your email. There is no email service, so the reset link (valid 15 minutes, single use) is printed in the **backend console / `backend/backend.log`**:
+  ```
+  [password reset] you@example.com
+    Reset link (valid 15 min): http://localhost:3000/reset-password?token=…
+  ```
+  Open it and choose a new password. Only a SHA-256 hash of the token is stored. The reply is the same whether or not the email exists.
+- **Input validation** with `express-validator` on every route: email format, password ≥ 6 characters (new accounts and resets), roles, Mongo ids, cart items and quantities, coordinates, product fields, image URLs, rating 1–5, OTP format. Errors come back as `400 {message, errors:[{field,message}]}`.
+- **helmet** security headers, no `x-powered-by`, JSON body limit 100 kb.
+- **Rate limits** (per IP):
+  - whole API: 300 requests/min
+  - login: 10 failed attempts per 15 min (successful logins don't count)
+  - register: 50/hour
+  - forgot/reset password: 5 per 15 min
+  - Blocked requests get `429` with a message.
+- Note: existing accounts with passwords shorter than 6 characters can still log in. The rule applies to new passwords.
+
 ## API (backend, all JSON)
 
 | Method | Path                            | Auth          | Description                                     |
@@ -179,13 +202,16 @@ Production: `npm run build` then `npm start`.
 | GET    | `/api/products?q=&category=`    | none          | List or search products                         |
 | GET    | `/api/products/categories`      | none          | Category names                                  |
 | GET    | `/api/products/:id`             | none          | One product                                     |
-| GET    | `/api/addresses`                | Bearer        | Saved addresses                                 |
-| POST   | `/api/addresses`                | Bearer        | `{label,line,lat,lng,isDefault?}`               |
-| PUT    | `/api/addresses/:id`            | Bearer        | Update / make default                           |
-| DELETE | `/api/addresses/:id`            | Bearer        | Remove a saved address                          |
-| POST   | `/api/auth/register`            | none          | `{name,email,password,role}` → `{token}`        |
-| POST   | `/api/auth/login`               | none          | `{email,password}` → `{token}`                  |
-| GET    | `/api/auth/me`                  | Bearer        | Current user                                    |
+| GET    | `/api/addresses`                | Cookie        | Saved addresses                                 |
+| POST   | `/api/addresses`                | Cookie        | `{label,line,lat,lng,isDefault?}`               |
+| PUT    | `/api/addresses/:id`            | Cookie        | Update / make default                           |
+| DELETE | `/api/addresses/:id`            | Cookie        | Remove a saved address                          |
+| POST   | `/api/auth/register`            | none          | `{name,email,password,role}` → `{user}` + httpOnly cookie |
+| POST   | `/api/auth/login`               | none          | `{email,password}` → `{user}` + httpOnly cookie |
+| POST   | `/api/auth/logout`              | none          | Clears the login cookie                         |
+| POST   | `/api/auth/forgot-password`     | none          | `{email}`; reset link printed to backend log    |
+| POST   | `/api/auth/reset-password`      | none          | `{token,password}`                              |
+| GET    | `/api/auth/me`                  | Cookie        | Current user                                    |
 | POST   | `/api/orders`                   | customer      | `{items:[{productId,quantity}],addressId}` (or `location`+`locationCoords`) or `{product,quantity,location}` → order |
 | GET    | `/api/orders/customer/:id`      | same user     | Customer's orders                               |
 | GET    | `/api/orders/pending`           | delivery      | Pending orders + partner's undelivered orders   |
@@ -198,7 +224,7 @@ Production: `npm run build` then `npm start`.
 | PUT    | `/api/orders/:id/status`        | delivery      | `{status, otp?}`: Accepted / Out for Delivery / Delivered (needs `otp`) |
 | PUT    | `/api/orders/:id/cancel`        | customer      | Cancel a Pending order and put the stock back   |
 | POST   | `/api/orders/:id/rating`        | customer      | `{stars:1-5, review?}` after delivery, once      |
-| GET    | `/api/orders/partners/:id/rating` | Bearer      | Partner's average rating and recent reviews     |
+| GET    | `/api/orders/partners/:id/rating` | Cookie      | Partner's average rating and recent reviews     |
 | GET    | `/api/orders/history/:userId`   | same user     | All orders for the user                         |
 
 Socket.IO event `orderUpdate` → `{ orderId, status }` is emitted on create and status change.

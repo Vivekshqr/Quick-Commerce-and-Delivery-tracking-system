@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { authApi, getToken } from "@/lib/api";
+import { authApi, hasSession } from "@/lib/api";
 import { homeFor } from "@/lib/roles";
 import PageHeader from "@/components/PageHeader";
 import StatsOverview from "@/components/admin/StatsOverview";
@@ -21,7 +21,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState("overview");
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!hasSession()) {
       router.push("/");
       return;
     }

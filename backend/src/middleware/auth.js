@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
 const { jwtSecret } = require("../config/env");
+const { readToken } = require("../services/authCookie");
 
-// Verifies "Authorization: Bearer <token>" and puts the payload on req.user.
+// Verifies the login token (httpOnly cookie, or "Authorization: Bearer <token>") and puts the payload on req.user.
 function authenticate(req, res, next) {
-  const token = req.headers.authorization?.split(" ")[1];
+  const token = readToken(req);
   if (!token) return res.status(401).json({ message: "Unauthorized" });
   try {
     req.user = jwt.verify(token, jwtSecret);

@@ -9,7 +9,16 @@ for (const key of required) {
   }
 }
 
+if (process.env.JWT_SECRET.length < 32) {
+  console.warn("Warning: JWT_SECRET is short. Use at least 32 random characters.");
+}
+
+const isProduction = process.env.NODE_ENV === "production";
+
 module.exports = {
+  isProduction,
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "1d",
+  cookieName: "qc_token",
   mongoUri: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,
   port: parseInt(process.env.PORT || "5000", 10),

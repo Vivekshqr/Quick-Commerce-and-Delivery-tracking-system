@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { authApi, clearToken, getToken } from "@/lib/api";
+import { authApi, clearSession, hasSession } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { homeFor } from "@/lib/roles";
 import NotificationBell from "./NotificationBell";
@@ -16,15 +16,16 @@ export default function Navbar() {
 
   useEffect(() => {
     setOpen(false);
-    if (!getToken()) {
+    if (!hasSession()) {
       setUser(null);
       return;
     }
     authApi.me().then(setUser).catch(() => setUser(null));
   }, [pathname]);
 
-  const logout = () => {
-    clearToken();
+  const logout = async () => {
+    await authApi.logout().catch(() => {}); // clears the httpOnly cookie
+    clearSession();
     cart.clear();
     setUser(null);
     router.push("/");

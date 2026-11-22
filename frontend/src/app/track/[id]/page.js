@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { errorMessage, getToken, ordersApi } from "@/lib/api";
+import { errorMessage, hasSession, ordersApi } from "@/lib/api";
 import useSocket from "@/lib/useSocket";
 import PageHeader from "@/components/PageHeader";
 import TrackingStats from "@/components/TrackingStats";
@@ -20,7 +20,7 @@ export default function TrackOrderPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!hasSession()) {
       router.push("/");
       return;
     }

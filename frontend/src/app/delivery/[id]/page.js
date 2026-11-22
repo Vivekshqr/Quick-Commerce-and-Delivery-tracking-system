@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { errorMessage, getToken, ordersApi } from "@/lib/api";
+import { errorMessage, hasSession, ordersApi } from "@/lib/api";
 import { pointNear, simulatedRoute } from "@/lib/geo";
 import useSocket from "@/lib/useSocket";
 import PageHeader from "@/components/PageHeader";
@@ -30,7 +30,7 @@ export default function DeliveryTrackPage() {
   }), [id]);
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!hasSession()) {
       router.push("/");
       return;
     }

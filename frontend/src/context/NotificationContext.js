@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { io } from "socket.io-client";
-import { API_URL, getToken } from "@/lib/api";
+import { API_URL, hasSession } from "@/lib/api";
 
 const NotificationContext = createContext(null);
 const STORAGE_KEY = "notifications";
@@ -12,15 +12,15 @@ const MAX_ITEMS = 30;
 // keeps a small history for the bell menu, and raises browser notifications.
 export function NotificationProvider({ children }) {
   const pathname = usePathname();
-  const [token, setToken] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [items, setItems] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [permission, setPermission] = useState("default");
   const timers = useRef({});
 
-  // Pick up login/logout (token changes) on navigation.
+  // Pick up login/logout on navigation.
   useEffect(() => {
-    setToken(getToken());
+    setLoggedIn(hasSession());
   }, [pathname]);
 
   useEffect(() => {
@@ -63,11 +63,11 @@ export function NotificationProvider({ children }) {
   }, [dismiss]);
 
   useEffect(() => {
-    if (!token) return;
-    const socket = io(API_URL, { auth: { token } });
+    if (!loggedIn) return;
+    const socket = io(API_URL, { withCredentials: true }); // auth via the httpOnly cookie
     socket.on("notification", push);
     return () => socket.disconnect();
-  }, [token, push]);
+  }, [loggedIn, push]);
 
   useEffect(() => {
     const t = timers.current;

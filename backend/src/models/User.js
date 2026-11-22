@@ -14,6 +14,9 @@ const UserSchema = new mongoose.Schema({
   password: String,
   role: { type: String, enum: ["customer", "delivery", "admin"], required: true },
   addresses: { type: [AddressSchema], default: [] },
+  // Password reset: only a SHA-256 hash of the token is stored.
+  resetPasswordHash: { type: String, select: false },
+  resetPasswordExpires: { type: Date, select: false },
 });
 
 module.exports = mongoose.models.User || mongoose.model("User", UserSchema);

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { authApi, errorMessage, setToken } from "@/lib/api";
+import { authApi, errorMessage, markSession } from "@/lib/api";
 import { homeFor } from "@/lib/roles";
 import AuthCard from "@/components/AuthCard";
 import { Alert, Spinner } from "@/components/ui";
@@ -19,9 +19,8 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const { token } = await authApi.login(email, password);
-      setToken(token);
-      const user = await authApi.me();
+      const { user } = await authApi.login(email, password); // backend sets the httpOnly cookie
+      markSession();
       router.push(homeFor(user.role));
     } catch (error) {
       setError(errorMessage(error, "Login failed"));
@@ -58,7 +57,10 @@ export default function Login() {
           />
         </div>
         <div>
-          <label htmlFor="password" className="label">Password</label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="label">Password</label>
+            <Link href="/forgot-password" className="mb-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700">Forgot password?</Link>
+          </div>
           <input
             id="password"
             type="password"
